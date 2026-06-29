@@ -5,7 +5,6 @@ namespace App\Http\Requests;
 use App\Enums\InvoiceStatus;
 use App\Models\Invoice;
 use Carbon\Carbon;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -70,7 +69,9 @@ class UpdateInvoiceRequest extends FormRequest
 
     protected function failedAuthorization(): void
     {
-        throw new AuthorizationException('Only pending invoices can be updated.');
+        throw new HttpResponseException(response()->json([
+            'message' => 'Only pending invoices can be updated.',
+        ], 403));
     }
 
     protected function failedValidation(Validator $validator): void

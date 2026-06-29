@@ -5,33 +5,42 @@ Full-stack test assignment: invoice management module.
 ## Stack
 
 - Backend: Laravel 12, PHP 8.4 in Docker (requirement: PHP 8.2+)
-- Database: PostgreSQL
+- Database: PostgreSQL 16
 - Frontend: Nuxt 4, Vue 3.5, TypeScript
 - Styling: TailwindCSS 4
+- Frontend validation: vee-validate + zod
 - Environment: Docker Compose
 
 ## Project Structure
 
-- backend/  - Laravel REST API
+- backend/ - Laravel REST API
 - frontend/ - Nuxt frontend application
 - docker-compose.yml - local development environment
 
-## Local Run
+## How to Run
 
 Start all services:
 
-docker compose up --build
+    docker compose up --build
 
 Available URLs:
 
 - Frontend: http://localhost:3000
 - Backend: http://localhost:8000
+- API: http://localhost:8000/api/invoices
 - PostgreSQL: localhost:5432
+
+Seed demo data:
+
+    docker compose exec backend php artisan db:seed --force
+
+If the database needs to be recreated:
+
+    docker compose exec backend php artisan migrate:fresh --seed --force
 
 Stop services:
 
-docker compose down
-
+    docker compose down
 
 ## API Endpoints
 
@@ -40,14 +49,101 @@ docker compose down
 - POST /api/invoices - create invoice
 - PUT /api/invoices/{id} - update pending invoice
 
-## Backend Decisions
+Authentication is not implemented because it is not required by the assignment.
 
-- Invoice ID uses auto increment because the assignment allows uuid or auto increment.
-- gross_amount is validated against net_amount + vat_amount.
-- gross_amount is recalculated on the backend before persistence.
-- Invoice update is allowed only for pending invoices.
-- Authentication is intentionally not implemented because it is not required.
+## Backend Structure
 
-## Current Status
+Backend code is split into:
 
-Backend invoice API implementation is in progress.
+- Model: App\Models\Invoice
+- Enum: App\Enums\InvoiceStatus
+- Controller: App\Http\Controllers\Api\InvoiceController
+- Requests: StoreInvoiceRequest, UpdateInvoiceRequest
+- Resource: InvoiceResource
+- Service: InvoiceService
+- Seeder: DatabaseSeeder
+
+Controller handles HTTP-level interaction.
+FormRequest classes handle server-side validation.
+InvoiceService contains business logic for create/update operations.
+InvoiceResource controls the JSON response shape.
+
+## Frontend Structure
+
+Frontend code is split into:
+
+- pages/invoices/index.vue - invoice list page
+- pages/invoices/[id].vue - invoice details page
+- components/InvoiceEditForm.vue - edit form
+- components/InvoiceStatusBadge.vue - visual status badge
+- composables/useInvoices.ts - API client logic
+- types/invoice.ts - TypeScript API contracts
+
+Pages describe user flows.
+Components isolate reusable UI pieces.
+Composable keeps API calls out of page components.
+Types keep frontend/backend data contracts explicit.
+
+## Business Rules
+
+Invoice fields:
+
+- number
+- supplier_name
+- supplier_tax_id
+- net_amount
+- vat_amount
+- gross_amount
+- currency
+- status
+- issue_date
+- due_date
+
+Validation rules:
+
+- number is required and unique
+- net_amount must be greater than 0
+- vat_amount cannot be negative
+- gross_amount must equal net_amount + vat_amount
+- due_date must be greater than or equal to issue_date
+- only pending invoices can be updated
+
+gross_amount is calculated on the frontend for UX, but validated and recalculated on the backend before persistence.
+
+## Decisions and Trade-offs
+
+- I used auto increment IDs because the assignment allows uuid or auto increment. For a production system, UUID or ULID could be better if public sequential IDs are not acceptable.
+- I did not implement authentication because the assignment explicitly says it is not required.
+- Pagination is not implemented because it is optional in the assignment and the test module is intentionally minimal.
+- The UI is intentionally simple. The focus is on clean flow, validation, API integration, and edge cases rather than visual complexity.
+- Laravel runs through artisan serve in Docker for development simplicity. In production I would use PHP-FPM with Nginx, Caddy, or FrankenPHP.
+- Demo data is created through the seeder, not hardcoded in the frontend.
+
+## UX Edge Cases Covered
+
+- Loading state on invoice list and invoice details pages
+- Error state when backend API is unavailable
+- Empty invoice list state
+- Clickable invoice row to open details
+- Status badge with different colors
+- Date formatting in readable form
+- Currency formatting
+- Edit form disabled for approved and rejected invoices
+- Gross amount preview recalculated automatically
+- Frontend validation for amount and due date rules
+- Backend validation errors displayed in the form
+- Refresh action on list and details pages
+
+## What I Would Improve in Production
+
+- Add authentication and authorization
+- Add pagination, search and filtering
+- Add audit log for invoice changes
+- Add automated backend and frontend tests
+- Add OpenAPI/Swagger documentation
+- Add CI pipeline
+- Store money values as integer minor units or use a dedicated Money value object
+- Add invoice history and status transition rules
+- Improve error reporting and logging
+- Add role-based access control
+- Add better production Docker setup with PHP-FPM and web server
