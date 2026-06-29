@@ -1,0 +1,38 @@
+export type InvoiceStatus = 'pending' | 'approved' | 'rejected'
+
+export interface Invoice {
+  id: number
+  number: string
+  supplier_name: string
+  supplier_tax_id: string
+  net_amount: string
+  vat_amount: string
+  gross_amount: string
+  currency: string
+  status: InvoiceStatus
+  issue_date: string
+  due_date: string
+  created_at: string
+  updated_at: string
+}
+
+export interface ApiCollectionResponse<T> {
+  data: T[]
+}
+
+export interface ApiSingleResponse<T> {
+  data: T
+  message?: string
+}
+
+export interface ApiErrorResponse {
+  message?: string
+  errors?: Record<string, string[]>
+}
+
+export interface UpdateInvoicePayload {
+  net_amount: number
+  vat_amount: number
+  gross_amount: string
+  due_date: string
+}
