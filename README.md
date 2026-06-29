@@ -32,6 +32,22 @@ Stop services:
 
 docker compose down
 
+
+## API Endpoints
+
+- GET /api/invoices - list invoices
+- GET /api/invoices/{id} - show one invoice
+- POST /api/invoices - create invoice
+- PUT /api/invoices/{id} - update pending invoice
+
+## Backend Decisions
+
+- Invoice ID uses auto increment because the assignment allows uuid or auto increment.
+- gross_amount is validated against net_amount + vat_amount.
+- gross_amount is recalculated on the backend before persistence.
+- Invoice update is allowed only for pending invoices.
+- Authentication is intentionally not implemented because it is not required.
+
 ## Current Status
 
-Project skeleton is prepared. Invoice module implementation is in progress.
+Backend invoice API implementation is in progress.
