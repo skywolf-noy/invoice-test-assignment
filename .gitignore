@@ -1,0 +1,25 @@
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Laravel
+/backend/vendor/
+/backend/node_modules/
+/backend/storage/logs/*.log
+/backend/bootstrap/cache/*.php
+/backend/database/database.sqlite
+
+# Nuxt
+/frontend/node_modules/
+/frontend/.nuxt/
+/frontend/.output/
+/frontend/dist/
+
+# Docker
+/docker-data/
