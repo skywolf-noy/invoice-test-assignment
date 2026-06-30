@@ -15,7 +15,7 @@ describe('InvoiceStatusBadge', () => {
       },
     })
 
-    expect(wrapper.text()).toContain('Approved')
+    expect(wrapper.text()).toContain('Затверджено')
   })
 
   it('applies semantic status class', () => {

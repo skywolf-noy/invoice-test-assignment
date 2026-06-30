@@ -42,3 +42,49 @@
   align-items: center;
   gap: 0.5rem;
 }
+
+.app-table th,
+.app-table td {
+  height: 4.25rem;
+}
+
+.app-table th:nth-child(1),
+.app-table td:nth-child(1) {
+  width: 10rem;
+}
+
+.app-table th:nth-child(2),
+.app-table td:nth-child(2) {
+  min-width: 16rem;
+}
+
+.app-table th:nth-child(3),
+.app-table td:nth-child(3) {
+  width: 11rem;
+  text-align: right;
+}
+
+.app-table th:nth-child(4),
+.app-table td:nth-child(4) {
+  width: 10rem;
+}
+
+.app-table th:nth-child(5),
+.app-table td:nth-child(5) {
+  width: 12rem;
+}
+
+.app-table th:nth-child(6),
+.app-table td:nth-child(6) {
+  width: 12rem;
+}
+
+.app-table__actions {
+  min-height: 2.75rem;
+}
+
+.app-table__finalised {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+}

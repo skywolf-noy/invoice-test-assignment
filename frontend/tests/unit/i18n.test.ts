@@ -17,7 +17,7 @@ describe('useAppI18n', () => {
   it('translates keys from default Ukrainian dictionary', () => {
     const { t } = useAppI18n()
 
-    expect(t('invoices.title')).toBe('Інвойси')
+    expect(t('invoices.title')).toBe('Рахунки-фактури')
   })
 
   it('switches locale to English', () => {

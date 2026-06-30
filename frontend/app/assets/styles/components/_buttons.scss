@@ -69,3 +69,19 @@
     width: auto;
   }
 }
+
+.app-button {
+  white-space: nowrap;
+}
+
+.app-button--primary {
+  box-shadow: 0 14px 30px rgb(15 23 42 / 0.18);
+}
+
+.app-button--secondary {
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+.app-button--danger {
+  box-shadow: 0 1px 2px rgb(190 18 60 / 0.08);
+}

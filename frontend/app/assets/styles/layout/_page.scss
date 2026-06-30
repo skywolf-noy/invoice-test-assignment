@@ -45,3 +45,24 @@
     justify-content: space-between;
   }
 }
+
+.app-container {
+  width: min(100%, 86rem);
+}
+
+.app-container--md {
+  width: min(100%, 74rem);
+}
+
+.app-page-header {
+  gap: 2rem;
+  margin-bottom: 2.25rem;
+}
+
+.app-page-header__content {
+  max-width: 44rem;
+}
+
+.app-page-header__actions {
+  flex: 0 0 auto;
+}

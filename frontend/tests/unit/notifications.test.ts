@@ -60,6 +60,6 @@ describe('notifications store', () => {
     notifySuccess('notifications.created', { duration: 0 })
 
     expect(store.items).toHaveLength(1)
-    expect(store.items[0].message).toBe('Інвойс створено.')
+    expect(store.items[0].message).toBe('Рахунок створено.')
   })
 })

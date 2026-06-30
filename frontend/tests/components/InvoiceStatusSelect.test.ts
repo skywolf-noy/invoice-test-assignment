@@ -36,6 +36,6 @@ describe('InvoiceStatusSelect', () => {
     })
 
     expect((wrapper.find('select').element as HTMLSelectElement).disabled).toBe(true)
-    expect(wrapper.text()).toContain('Завершений документ')
+    expect(wrapper.text()).toContain('Документ завершено')
   })
 })
