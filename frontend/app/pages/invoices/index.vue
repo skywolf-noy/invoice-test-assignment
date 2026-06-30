@@ -37,6 +37,11 @@ const {
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
           <LanguageSwitcher />
 
+          <InvoiceExportMenu
+            mode="list"
+            :invoices="invoices"
+          />
+
           <button
             type="button"
             class="inline-flex items-center justify-center rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"

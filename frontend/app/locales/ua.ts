@@ -108,11 +108,18 @@ export const ua = {
 
   export: {
     title: 'Експорт',
+    exporting: 'Експорт...',
     exportAsPdf: 'Експорт у PDF',
     exportAsExcel: 'Експорт у Excel',
     exportAsWord: 'Експорт у Word',
     exportAsCsv: 'Експорт у CSV',
+    listPdf: 'PDF',
+    listExcel: 'Excel',
+    listCsv: 'CSV',
+    invoicePdf: 'PDF',
+    invoiceWord: 'Word',
     invoiceReport: 'Звіт по інвойсах',
+    invoiceDocument: 'Документ інвойсу',
     generatedAt: 'Згенеровано',
     totalInvoices: 'Всього інвойсів',
   },

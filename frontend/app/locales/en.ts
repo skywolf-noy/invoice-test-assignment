@@ -108,11 +108,18 @@ export const en = {
 
   export: {
     title: 'Export',
+    exporting: 'Exporting...',
     exportAsPdf: 'Export as PDF',
     exportAsExcel: 'Export as Excel',
     exportAsWord: 'Export as Word',
     exportAsCsv: 'Export as CSV',
+    listPdf: 'PDF',
+    listExcel: 'Excel',
+    listCsv: 'CSV',
+    invoicePdf: 'PDF',
+    invoiceWord: 'Word',
     invoiceReport: 'Invoice Report',
+    invoiceDocument: 'Invoice Document',
     generatedAt: 'Generated at',
     totalInvoices: 'Total invoices',
   },

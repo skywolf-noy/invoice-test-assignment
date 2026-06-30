@@ -64,7 +64,14 @@ definePageMeta({
               </p>
             </div>
 
-            <InvoiceStatusBadge :status="invoice.status" />
+            <div class="flex flex-col items-start gap-3 sm:items-end">
+              <InvoiceStatusBadge :status="invoice.status" />
+
+              <InvoiceExportMenu
+                mode="details"
+                :invoice="invoice"
+              />
+            </div>
           </div>
 
           <dl class="mt-8 grid gap-5 md:grid-cols-3">
