@@ -23,3 +23,8 @@
 
 # Docker
 /docker-data/
+
+# Nuxt generated files
+frontend/.nuxt/
+frontend/.output/
+frontend/node_modules/
