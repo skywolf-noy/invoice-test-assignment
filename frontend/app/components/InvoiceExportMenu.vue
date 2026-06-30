@@ -30,56 +30,46 @@ function isActive(format: string): boolean {
 }
 
 function exportListPdf(): void {
-  if (!props.invoices?.length) {
-    return
+  if (props.invoices?.length) {
+    void exportInvoicesPdf(props.invoices)
   }
-
-  void exportInvoicesPdf(props.invoices)
 }
 
 function exportListExcel(): void {
-  if (!props.invoices?.length) {
-    return
+  if (props.invoices?.length) {
+    void exportInvoicesExcel(props.invoices)
   }
-
-  void exportInvoicesExcel(props.invoices)
 }
 
 function exportListCsv(): void {
-  if (!props.invoices?.length) {
-    return
+  if (props.invoices?.length) {
+    void exportInvoicesCsv(props.invoices)
   }
-
-  void exportInvoicesCsv(props.invoices)
 }
 
 function exportDetailsPdf(): void {
-  if (!props.invoice) {
-    return
+  if (props.invoice) {
+    void exportInvoicePdf(props.invoice)
   }
-
-  void exportInvoicePdf(props.invoice)
 }
 
 function exportDetailsWord(): void {
-  if (!props.invoice) {
-    return
+  if (props.invoice) {
+    void exportInvoiceWord(props.invoice)
   }
-
-  void exportInvoiceWord(props.invoice)
 }
 </script>
 
 <template>
-  <div class="inline-flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
-    <span class="px-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+  <div class="app-export-menu">
+    <span class="app-export-menu__label">
       {{ t('export.title') }}
     </span>
 
     <template v-if="mode === 'list'">
       <button
         type="button"
-        class="rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+        class="app-button app-button--secondary app-button--compact"
         :disabled="!hasListData || isExporting"
         :title="t('export.exportAsPdf')"
         @click="exportListPdf"
@@ -89,7 +79,7 @@ function exportDetailsWord(): void {
 
       <button
         type="button"
-        class="rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+        class="app-button app-button--secondary app-button--compact"
         :disabled="!hasListData || isExporting"
         :title="t('export.exportAsExcel')"
         @click="exportListExcel"
@@ -99,7 +89,7 @@ function exportDetailsWord(): void {
 
       <button
         type="button"
-        class="rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+        class="app-button app-button--secondary app-button--compact"
         :disabled="!hasListData || isExporting"
         :title="t('export.exportAsCsv')"
         @click="exportListCsv"
@@ -111,7 +101,7 @@ function exportDetailsWord(): void {
     <template v-else>
       <button
         type="button"
-        class="rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+        class="app-button app-button--secondary app-button--compact"
         :disabled="!hasInvoiceData || isExporting"
         :title="t('export.exportAsPdf')"
         @click="exportDetailsPdf"
@@ -121,7 +111,7 @@ function exportDetailsWord(): void {
 
       <button
         type="button"
-        class="rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+        class="app-button app-button--secondary app-button--compact"
         :disabled="!hasInvoiceData || isExporting"
         :title="t('export.exportAsWord')"
         @click="exportDetailsWord"

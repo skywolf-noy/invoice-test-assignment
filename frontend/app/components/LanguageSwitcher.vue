@@ -16,12 +16,12 @@ function handleChange(event: Event): void {
 </script>
 
 <template>
-  <label class="inline-flex items-center gap-2 text-sm font-semibold text-slate-600">
+  <label class="app-language-switcher">
     <span>{{ t('app.language') }}</span>
 
     <select
       :value="locale"
-      class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+      class="app-select"
       @change="handleChange"
     >
       <option

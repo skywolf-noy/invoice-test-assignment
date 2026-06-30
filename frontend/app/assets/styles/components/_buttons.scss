@@ -53,3 +53,19 @@
   height: 2.25rem;
   padding: 0;
 }
+
+.app-button--compact {
+  min-height: 2.25rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.app-button--full {
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .app-button--full {
+    width: auto;
+  }
+}
