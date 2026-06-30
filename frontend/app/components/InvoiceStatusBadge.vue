@@ -1,28 +1,30 @@
 <script setup lang="ts">
-import type { InvoiceStatus } from '~/types/invoice'
+import { computed } from 'vue'
 
 const props = defineProps<{
-  status: InvoiceStatus
+  status: 'pending' | 'approved' | 'rejected'
 }>()
 
-const labels: Record<InvoiceStatus, string> = {
-  pending: 'Pending',
-  approved: 'Approved',
-  rejected: 'Rejected',
-}
+const {
+  t,
+} = useAppI18n()
 
-const classes: Record<InvoiceStatus, string> = {
-  pending: 'bg-amber-100 text-amber-800 ring-amber-200',
-  approved: 'bg-emerald-100 text-emerald-800 ring-emerald-200',
-  rejected: 'bg-rose-100 text-rose-800 ring-rose-200',
-}
+const statusClass = computed(() => {
+  return {
+    pending: 'border-amber-200 bg-amber-50 text-amber-700',
+    approved: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+    rejected: 'border-rose-200 bg-rose-50 text-rose-700',
+  }[props.status]
+})
+
+const statusLabel = computed(() => t(`status.${props.status}`))
 </script>
 
 <template>
   <span
-    class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset"
-    :class="classes[props.status]"
+    class="inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide"
+    :class="statusClass"
   >
-    {{ labels[props.status] }}
+    {{ statusLabel }}
   </span>
 </template>

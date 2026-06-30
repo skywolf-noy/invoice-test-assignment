@@ -12,6 +12,10 @@ const emit = defineEmits<{
 }>()
 
 const {
+  t,
+} = useAppI18n()
+
+const {
   isLocked,
   handleChange,
 } = useInvoiceStatusSelect(props, emit)
@@ -26,18 +30,18 @@ const {
       @change="handleChange"
     >
       <option value="pending">
-        Pending
+        {{ t('status.pending') }}
       </option>
       <option value="approved">
-        Approved
+        {{ t('status.approved') }}
       </option>
       <option value="rejected">
-        Rejected
+        {{ t('status.rejected') }}
       </option>
     </select>
 
     <span v-if="showLockedHint && isLocked" class="text-xs font-medium text-slate-400">
-      Finalised document
+      {{ t('invoices.finalisedDocument') }}
     </span>
   </div>
 </template>

@@ -6,6 +6,7 @@ const {
   actionError,
   formatMoney,
   formatDate,
+  t,
   refreshInvoices,
   openInvoice,
   openCreateInvoice,
@@ -20,36 +21,40 @@ const {
 <template>
   <main class="min-h-screen bg-slate-50 px-4 py-8 text-slate-950 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-6xl">
-      <header class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <header class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p class="text-sm font-semibold uppercase tracking-wide text-slate-500">
-            Invoice module
+            {{ t('app.module') }}
           </p>
           <h1 class="mt-2 text-3xl font-bold tracking-tight">
-            Invoices
+            {{ t('invoices.title') }}
           </h1>
           <p class="mt-2 max-w-2xl text-slate-600">
-            Minimal full-stack invoice management module with Laravel API and Nuxt frontend.
+            {{ t('invoices.moduleDescription') }}
           </p>
         </div>
 
-        <button
-          type="button"
-          class="inline-flex items-center justify-center rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
-          @click="openCreateInvoice"
-        >
-          Create invoice
-        </button>
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <LanguageSwitcher />
+
+          <button
+            type="button"
+            class="inline-flex items-center justify-center rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+            @click="openCreateInvoice"
+          >
+            {{ t('invoices.createInvoice') }}
+          </button>
+        </div>
       </header>
 
       <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
           <div>
             <h2 class="text-base font-semibold">
-              Invoice list
+              {{ t('invoices.listTitle') }}
             </h2>
             <p class="text-sm text-slate-500">
-              Sorted by newest records from the backend.
+              {{ t('invoices.listDescription') }}
             </p>
           </div>
 
@@ -58,7 +63,7 @@ const {
             class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             @click="refreshInvoices"
           >
-            Refresh
+            {{ t('app.refresh') }}
           </button>
         </div>
 
@@ -67,7 +72,7 @@ const {
         </div>
 
         <div v-if="isLoading" class="p-6 text-slate-500">
-          Loading invoices...
+          {{ t('invoices.loadingList') }}
         </div>
 
         <div v-else-if="error" class="m-5 rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-700">
@@ -75,7 +80,7 @@ const {
         </div>
 
         <div v-else-if="!invoices.length" class="p-6 text-slate-500">
-          No invoices found.
+          {{ t('invoices.noInvoices') }}
         </div>
 
         <div v-else class="overflow-x-auto">
@@ -83,22 +88,22 @@ const {
             <thead class="bg-slate-50">
               <tr>
                 <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Number
+                  {{ t('fields.number') }}
                 </th>
                 <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Supplier
+                  {{ t('fields.supplier') }}
                 </th>
                 <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Gross amount
+                  {{ t('fields.grossAmount') }}
                 </th>
                 <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Status
+                  {{ t('fields.status') }}
                 </th>
                 <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Due date
+                  {{ t('fields.dueDate') }}
                 </th>
                 <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Actions
+                  {{ t('app.actions') }}
                 </th>
               </tr>
             </thead>
@@ -146,8 +151,8 @@ const {
                       type="button"
                       class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-rose-300 text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
                       :disabled="isActionProcessing(invoice.id)"
-                      title="Delete invoice"
-                      aria-label="Delete invoice"
+                      :title="t('invoices.deleteInvoice')"
+                      :aria-label="t('invoices.deleteInvoice')"
                       @click="deleteInvoice(invoice)"
                     >
                       <svg
@@ -168,7 +173,7 @@ const {
                   </div>
 
                   <span v-else class="text-sm font-medium text-slate-400">
-                    Finalised
+                    {{ t('invoices.finalised') }}
                   </span>
                 </td>
               </tr>

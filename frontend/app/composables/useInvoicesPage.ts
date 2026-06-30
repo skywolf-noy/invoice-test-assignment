@@ -23,6 +23,10 @@ export function useInvoicesPage() {
     formatDate,
   } = useInvoiceFormatters()
 
+  const {
+    t,
+  } = useAppI18n()
+
   onMounted(() => {
     void listStore.fetchInvoices()
   })
@@ -44,7 +48,9 @@ export function useInvoicesPage() {
   }
 
   function deleteInvoice(invoice: Invoice): void {
-    const confirmed = window.confirm(`Delete invoice ${invoice.number}? This action is allowed only for pending invoices.`)
+    const confirmed = window.confirm(
+      t('invoices.deleteConfirm', { number: invoice.number }),
+    )
 
     if (!confirmed) {
       return
@@ -60,6 +66,7 @@ export function useInvoicesPage() {
     actionError,
     formatMoney,
     formatDate,
+    t,
     refreshInvoices,
     openInvoice,
     openCreateInvoice,

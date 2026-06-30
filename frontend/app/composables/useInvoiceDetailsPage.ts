@@ -27,6 +27,10 @@ export function useInvoiceDetailsPage() {
     formatDateTime,
   } = useInvoiceFormatters()
 
+  const {
+    t,
+  } = useAppI18n()
+
   onMounted(() => {
     void detailsStore.fetchInvoice(invoiceId.value)
   })
@@ -60,7 +64,9 @@ export function useInvoiceDetailsPage() {
       return
     }
 
-    const confirmed = window.confirm(`Delete invoice ${invoice.value.number}? This action is allowed only for pending invoices.`)
+    const confirmed = window.confirm(
+      t('invoices.deleteConfirm', { number: invoice.value.number }),
+    )
 
     if (!confirmed) {
       return
@@ -79,6 +85,7 @@ export function useInvoiceDetailsPage() {
     formatMoney,
     formatDate,
     formatDateTime,
+    t,
     goBack,
     refreshDetails,
     handleUpdated,
