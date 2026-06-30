@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { LocaleCode } from '~/locales'
+import { useAppI18n } from '~/composables/useAppI18n'
 
 const {
   locale,

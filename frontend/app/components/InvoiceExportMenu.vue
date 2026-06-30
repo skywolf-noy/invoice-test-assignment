@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useAppI18n } from '~/composables/useAppI18n'
+import { useInvoiceExport } from '~/composables/useInvoiceExport'
 import type { Invoice } from '~/types/invoice'
 
 const props = defineProps<{

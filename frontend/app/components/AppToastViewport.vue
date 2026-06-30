@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAppI18n } from '~/composables/useAppI18n'
+import { useNotifications } from '~/composables/useNotifications'
 import type { AppNotificationType } from '~/stores/notifications'
 
 const {
