@@ -19,6 +19,8 @@ const {
   t,
   netAmount,
   vatAmount,
+  currency,
+  currencyOptions,
   dueDate,
   grossAmount,
   errors,
