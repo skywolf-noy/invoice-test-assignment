@@ -13,6 +13,7 @@ const {
   netAmount,
   vatAmount,
   currency,
+  currencyOptions,
   issueDate,
   dueDate,
   grossAmount,
@@ -47,7 +48,17 @@ const {
 
       <label class="app-field">
         <span class="app-field__label">{{ t('fields.currency') }}</span>
-        <input v-model="currency" type="text" maxlength="3" class="app-field__control">
+
+        <select v-model="currency" class="app-field__control">
+          <option
+            v-for="currencyOption in currencyOptions"
+            :key="currencyOption"
+            :value="currencyOption"
+          >
+            {{ currencyOption }}
+          </option>
+        </select>
+
         <span v-if="errors.currency" class="app-field__error">{{ errors.currency }}</span>
       </label>
 

@@ -1,163 +1,207 @@
-import { storeToRefs } from 'pinia'
 import { toTypedSchema } from '@vee-validate/zod'
-import { useForm } from 'vee-validate'
+import { useField, useForm } from 'vee-validate'
 import { computed } from 'vue'
 import { z } from 'zod'
+import { useAppI18n } from '~/composables/useAppI18n'
+import { useNotifications } from '~/composables/useNotifications'
 import { useInvoiceMutationsStore } from '~/stores/invoiceMutations'
 import type { Invoice } from '~/types/invoice'
 
-interface CreateInvoiceFormValues {
-  number: string
-  supplier_name: string
-  supplier_tax_id: string
-  net_amount: string
-  vat_amount: string
-  currency: string
-  issue_date: string
-  due_date: string
+type CreateInvoiceFormSubmitHandler = (invoice: Invoice) => void
+
+const currencyOptions = [
+  'UAH',
+  'USD',
+  'EUR',
+  'GBP',
+  'PLN',
+] as const
+
+function normalizeNumberInput(value: unknown): string {
+  if (value === null || value === undefined || value === '') {
+    return ''
+  }
+
+  return String(value).replace(',', '.')
 }
 
-function today(): string {
-  return new Date().toISOString().slice(0, 10)
+function normalizeTextInput(value: unknown): string {
+  if (value === null || value === undefined) {
+    return ''
+  }
+
+  return String(value).trim()
 }
 
 function isValidAmount(value: string): boolean {
-  const numericValue = Number(value)
+  if (value === '') {
+    return false
+  }
 
-  return Number.isFinite(numericValue) && numericValue >= 0
+  const amount = Number(value)
+
+  return Number.isFinite(amount) && amount >= 0
 }
 
-function isValidDate(value: string): boolean {
-  return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value))
+function formatAmount(value: unknown): string {
+  const normalizedValue = normalizeNumberInput(value)
+  const amount = Number(normalizedValue)
+
+  if (!Number.isFinite(amount)) {
+    return '0.00'
+  }
+
+  return amount.toFixed(2)
 }
 
-function normalizeCurrency(value: string): string {
-  return value.trim().toUpperCase()
+function getTodayDate(): string {
+  return new Date().toISOString().slice(0, 10)
 }
 
-export function useInvoiceCreateForm(onCreated: (invoice: Invoice) => void) {
-  const invoiceMutationsStore = useInvoiceMutationsStore()
+function getDefaultDueDate(): string {
+  const date = new Date()
 
-  const {
-    isCreating,
-    createError,
-  } = storeToRefs(invoiceMutationsStore)
+  date.setDate(date.getDate() + 14)
 
+  return date.toISOString().slice(0, 10)
+}
+
+function generateInvoiceNumber(): string {
+  const randomPart = Math.floor(100000 + Math.random() * 900000)
+
+  return `INV-${randomPart}`
+}
+
+export function useInvoiceCreateForm(onCreated: CreateInvoiceFormSubmitHandler) {
   const {
     t,
   } = useAppI18n()
 
+  const invoiceMutationsStore = useInvoiceMutationsStore()
+
   const {
-    notifySuccess,
-    notifyError,
+    showSuccess,
+    showError,
   } = useNotifications()
 
   const validationSchema = toTypedSchema(
     z.object({
-      number: z.string().trim().min(1, t('validation.required')),
-      supplier_name: z.string().trim().min(1, t('validation.required')),
-      supplier_tax_id: z.string().trim().min(1, t('validation.required')),
-      net_amount: z
-        .string()
-        .trim()
-        .min(1, t('validation.required'))
-        .refine(isValidAmount, t('validation.minAmount')),
-      vat_amount: z
-        .string()
-        .trim()
-        .min(1, t('validation.required'))
-        .refine(isValidAmount, t('validation.minAmount')),
-      currency: z
-        .string()
-        .trim()
-        .min(1, t('validation.required'))
-        .regex(/^[A-Za-z]{3}$/, t('validation.invalidCurrency')),
-      issue_date: z
-        .string()
-        .trim()
-        .min(1, t('validation.required'))
-        .refine(isValidDate, t('validation.invalidDate')),
-      due_date: z
-        .string()
-        .trim()
-        .min(1, t('validation.required'))
-        .refine(isValidDate, t('validation.invalidDate')),
-    }).superRefine((values, context) => {
-      if (
-        isValidDate(values.issue_date) &&
-        isValidDate(values.due_date) &&
-        values.due_date < values.issue_date
-      ) {
-        context.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: t('validation.dueDateAfterIssueDate'),
-          path: ['due_date'],
-        })
-      }
+      number: z.preprocess(
+        normalizeTextInput,
+        z.string().min(1, t('validation.required')),
+      ),
+      supplier_name: z.preprocess(
+        normalizeTextInput,
+        z.string().min(1, t('validation.required')),
+      ),
+      supplier_tax_id: z.preprocess(
+        normalizeTextInput,
+        z.string().min(1, t('validation.required')),
+      ),
+      net_amount: z.preprocess(
+        normalizeNumberInput,
+        z.string()
+          .min(1, t('validation.required'))
+          .refine(isValidAmount, t('validation.invalidNumber')),
+      ),
+      vat_amount: z.preprocess(
+        normalizeNumberInput,
+        z.string()
+          .min(1, t('validation.required'))
+          .refine(isValidAmount, t('validation.invalidNumber')),
+      ),
+      currency: z.enum(currencyOptions),
+      issue_date: z.string().min(1, t('validation.invalidDate')),
+      due_date: z.string().min(1, t('validation.invalidDate')),
     }),
   )
 
   const {
-    defineField,
-    errors,
     handleSubmit,
-    values,
-  } = useForm<CreateInvoiceFormValues>({
+    errors,
+    resetForm,
+  } = useForm({
     validationSchema,
     initialValues: {
-      number: '',
+      number: generateInvoiceNumber(),
       supplier_name: '',
       supplier_tax_id: '',
-      net_amount: '',
-      vat_amount: '',
-      currency: 'USD',
-      issue_date: today(),
-      due_date: today(),
+      net_amount: '0.00',
+      vat_amount: '0.00',
+      currency: 'UAH',
+      issue_date: getTodayDate(),
+      due_date: getDefaultDueDate(),
     },
   })
 
-  const [number] = defineField('number')
-  const [supplierName] = defineField('supplier_name')
-  const [supplierTaxId] = defineField('supplier_tax_id')
-  const [netAmount] = defineField('net_amount')
-  const [vatAmount] = defineField('vat_amount')
-  const [currency] = defineField('currency')
-  const [issueDate] = defineField('issue_date')
-  const [dueDate] = defineField('due_date')
+  const {
+    value: number,
+  } = useField<string>('number')
+
+  const {
+    value: supplierName,
+  } = useField<string>('supplier_name')
+
+  const {
+    value: supplierTaxId,
+  } = useField<string>('supplier_tax_id')
+
+  const {
+    value: netAmount,
+  } = useField<string | number>('net_amount')
+
+  const {
+    value: vatAmount,
+  } = useField<string | number>('vat_amount')
+
+  const {
+    value: currency,
+  } = useField<(typeof currencyOptions)[number]>('currency')
+
+  const {
+    value: issueDate,
+  } = useField<string>('issue_date')
+
+  const {
+    value: dueDate,
+  } = useField<string>('due_date')
 
   const grossAmount = computed(() => {
-    const net = Number(values.net_amount)
-    const vat = Number(values.vat_amount)
+    const net = Number(normalizeNumberInput(netAmount.value))
+    const vat = Number(normalizeNumberInput(vatAmount.value))
 
-    const safeNet = Number.isFinite(net) ? net : 0
-    const safeVat = Number.isFinite(vat) ? vat : 0
+    if (!Number.isFinite(net) || !Number.isFinite(vat)) {
+      return '0.00'
+    }
 
-    return (safeNet + safeVat).toFixed(2)
+    return (net + vat).toFixed(2)
   })
 
-  const submitForm = handleSubmit(async (formValues) => {
+  const submitForm = handleSubmit(async (values) => {
     try {
-      const createdInvoice = await invoiceMutationsStore.createInvoice({
-        number: formValues.number.trim(),
-        supplier_name: formValues.supplier_name.trim(),
-        supplier_tax_id: formValues.supplier_tax_id.trim(),
-        net_amount: Number(formValues.net_amount).toFixed(2),
-        vat_amount: Number(formValues.vat_amount).toFixed(2),
+      const invoice = await invoiceMutationsStore.createInvoice({
+        number: values.number,
+        supplier_name: values.supplier_name,
+        supplier_tax_id: values.supplier_tax_id,
+        net_amount: formatAmount(values.net_amount),
+        vat_amount: formatAmount(values.vat_amount),
         gross_amount: grossAmount.value,
-        currency: normalizeCurrency(formValues.currency),
-        issue_date: formValues.issue_date,
-        due_date: formValues.due_date,
+        currency: values.currency,
+        issue_date: values.issue_date,
+        due_date: values.due_date,
       })
 
-      notifySuccess('notifications.created')
-      onCreated(createdInvoice)
+      showSuccess(t('notifications.created'))
+      resetForm()
+      onCreated(invoice)
     } catch {
-      notifyError('notifications.failed')
+      showError(t('errors.createInvoice'))
     }
   })
 
   return {
     t,
+    currencyOptions,
     number,
     supplierName,
     supplierTaxId,
@@ -168,8 +212,8 @@ export function useInvoiceCreateForm(onCreated: (invoice: Invoice) => void) {
     dueDate,
     grossAmount,
     errors,
-    isCreating,
-    createError,
+    isCreating: computed(() => invoiceMutationsStore.isCreating),
+    createError: computed(() => invoiceMutationsStore.createError),
     submitForm,
   }
 }
