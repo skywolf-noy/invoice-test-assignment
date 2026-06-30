@@ -34,7 +34,7 @@ describe('InvoiceExportMenu', () => {
     vi.clearAllMocks()
   })
 
-  it('calls list export actions', async () => {
+  it('exports invoice list as PDF by default', async () => {
     const invoice = makeInvoice()
 
     const wrapper = mount(InvoiceExportMenu, {
@@ -44,18 +44,44 @@ describe('InvoiceExportMenu', () => {
       },
     })
 
-    const buttons = wrapper.findAll('button')
-
-    await buttons[0].trigger('click')
-    await buttons[1].trigger('click')
-    await buttons[2].trigger('click')
+    await wrapper.find('button').trigger('click')
 
     expect(exportMocks.exportInvoicesPdf).toHaveBeenCalledWith([invoice])
+  })
+
+  it('exports invoice list as Excel after selecting xlsx', async () => {
+    const invoice = makeInvoice()
+
+    const wrapper = mount(InvoiceExportMenu, {
+      props: {
+        mode: 'list',
+        invoices: [invoice],
+      },
+    })
+
+    await wrapper.find('select').setValue('xlsx')
+    await wrapper.find('button').trigger('click')
+
     expect(exportMocks.exportInvoicesExcel).toHaveBeenCalledWith([invoice])
+  })
+
+  it('exports invoice list as CSV after selecting csv', async () => {
+    const invoice = makeInvoice()
+
+    const wrapper = mount(InvoiceExportMenu, {
+      props: {
+        mode: 'list',
+        invoices: [invoice],
+      },
+    })
+
+    await wrapper.find('select').setValue('csv')
+    await wrapper.find('button').trigger('click')
+
     expect(exportMocks.exportInvoicesCsv).toHaveBeenCalledWith([invoice])
   })
 
-  it('calls details export actions', async () => {
+  it('exports invoice details as Word after selecting docx', async () => {
     const invoice = makeInvoice()
 
     const wrapper = mount(InvoiceExportMenu, {
@@ -65,16 +91,13 @@ describe('InvoiceExportMenu', () => {
       },
     })
 
-    const buttons = wrapper.findAll('button')
+    await wrapper.find('select').setValue('docx')
+    await wrapper.find('button').trigger('click')
 
-    await buttons[0].trigger('click')
-    await buttons[1].trigger('click')
-
-    expect(exportMocks.exportInvoicePdf).toHaveBeenCalledWith(invoice)
     expect(exportMocks.exportInvoiceWord).toHaveBeenCalledWith(invoice)
   })
 
-  it('disables list export buttons when there are no invoices', () => {
+  it('disables export controls when there are no invoices', () => {
     const wrapper = mount(InvoiceExportMenu, {
       props: {
         mode: 'list',
@@ -82,8 +105,7 @@ describe('InvoiceExportMenu', () => {
       },
     })
 
-    expect(
-      wrapper.findAll('button').every((button) => button.attributes('disabled') !== undefined),
-    ).toBe(true)
+    expect(wrapper.find('select').attributes('disabled')).toBeDefined()
+    expect(wrapper.find('button').attributes('disabled')).toBeDefined()
   })
 })

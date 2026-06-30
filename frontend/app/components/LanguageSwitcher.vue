@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import type { LocaleCode } from '~/locales'
 import { useAppI18n } from '~/composables/useAppI18n'
+import type { LocaleCode } from '~/locales'
 
 const {
   locale,
   availableLocales,
-  t,
   setLocale,
 } = useAppI18n()
 
@@ -17,21 +16,18 @@ function handleChange(event: Event): void {
 </script>
 
 <template>
-  <label class="app-language-switcher">
-    <span>{{ t('app.language') }}</span>
-
-    <select
-      :value="locale"
-      class="app-select"
-      @change="handleChange"
+  <select
+    :value="locale"
+    class="app-select app-select--compact"
+    aria-label="Language"
+    @change="handleChange"
+  >
+    <option
+      v-for="availableLocale in availableLocales"
+      :key="availableLocale"
+      :value="availableLocale"
     >
-      <option
-        v-for="availableLocale in availableLocales"
-        :key="availableLocale"
-        :value="availableLocale"
-      >
-        {{ availableLocale.toUpperCase() }}
-      </option>
-    </select>
-  </label>
+      {{ availableLocale.toUpperCase() }}
+    </option>
+  </select>
 </template>

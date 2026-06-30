@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useAppI18n } from '~/composables/useAppI18n'
-import { useInvoiceExport } from '~/composables/useInvoiceExport'
+import { useInvoiceExport, type InvoiceExportFormat } from '~/composables/useInvoiceExport'
 import type { Invoice } from '~/types/invoice'
 
 const props = defineProps<{
@@ -24,39 +24,92 @@ const {
   exportInvoicesCsv,
 } = useInvoiceExport()
 
+const selectedFormat = ref<InvoiceExportFormat>('pdf')
+
 const hasListData = computed(() => Boolean(props.invoices?.length))
 const hasInvoiceData = computed(() => Boolean(props.invoice))
+const hasExportData = computed(() => props.mode === 'list' ? hasListData.value : hasInvoiceData.value)
 
-function isActive(format: string): boolean {
+const formatOptions = computed(() => {
+  if (props.mode === 'list') {
+    return [
+      {
+        value: 'pdf',
+        label: t('export.listPdf'),
+      },
+      {
+        value: 'xlsx',
+        label: t('export.listExcel'),
+      },
+      {
+        value: 'csv',
+        label: t('export.listCsv'),
+      },
+    ] as Array<{ value: InvoiceExportFormat; label: string }>
+  }
+
+  return [
+    {
+      value: 'pdf',
+      label: t('export.invoicePdf'),
+    },
+    {
+      value: 'docx',
+      label: t('export.invoiceWord'),
+    },
+  ] as Array<{ value: InvoiceExportFormat; label: string }>
+})
+
+watch(
+  () => props.mode,
+  () => {
+    selectedFormat.value = 'pdf'
+  },
+)
+
+function isActive(format: InvoiceExportFormat): boolean {
   return isExporting.value && activeExportFormat.value === format
 }
 
-function exportListPdf(): void {
-  if (props.invoices?.length) {
-    void exportInvoicesPdf(props.invoices)
-  }
+function handleFormatChange(event: Event): void {
+  const target = event.target as HTMLSelectElement
+
+  selectedFormat.value = target.value as InvoiceExportFormat
 }
 
-function exportListExcel(): void {
-  if (props.invoices?.length) {
-    void exportInvoicesExcel(props.invoices)
-  }
-}
+function exportSelected(): void {
+  if (props.mode === 'list') {
+    if (!props.invoices?.length) {
+      return
+    }
 
-function exportListCsv(): void {
-  if (props.invoices?.length) {
-    void exportInvoicesCsv(props.invoices)
-  }
-}
+    if (selectedFormat.value === 'pdf') {
+      void exportInvoicesPdf(props.invoices)
+      return
+    }
 
-function exportDetailsPdf(): void {
-  if (props.invoice) {
+    if (selectedFormat.value === 'xlsx') {
+      void exportInvoicesExcel(props.invoices)
+      return
+    }
+
+    if (selectedFormat.value === 'csv') {
+      void exportInvoicesCsv(props.invoices)
+    }
+
+    return
+  }
+
+  if (!props.invoice) {
+    return
+  }
+
+  if (selectedFormat.value === 'pdf') {
     void exportInvoicePdf(props.invoice)
+    return
   }
-}
 
-function exportDetailsWord(): void {
-  if (props.invoice) {
+  if (selectedFormat.value === 'docx') {
     void exportInvoiceWord(props.invoice)
   }
 }
@@ -64,62 +117,29 @@ function exportDetailsWord(): void {
 
 <template>
   <div class="app-export-menu">
-    <span class="app-export-menu__label">
-      {{ t('export.title') }}
-    </span>
-
-    <template v-if="mode === 'list'">
-      <button
-        type="button"
-        class="app-button app-button--secondary app-button--compact"
-        :disabled="!hasListData || isExporting"
-        :title="t('export.exportAsPdf')"
-        @click="exportListPdf"
+    <select
+      :value="selectedFormat"
+      class="app-select app-select--compact"
+      :disabled="!hasExportData || isExporting"
+      :aria-label="t('export.title')"
+      @change="handleFormatChange"
+    >
+      <option
+        v-for="option in formatOptions"
+        :key="option.value"
+        :value="option.value"
       >
-        {{ isActive('pdf') ? t('export.exporting') : t('export.listPdf') }}
-      </button>
+        {{ option.label }}
+      </option>
+    </select>
 
-      <button
-        type="button"
-        class="app-button app-button--secondary app-button--compact"
-        :disabled="!hasListData || isExporting"
-        :title="t('export.exportAsExcel')"
-        @click="exportListExcel"
-      >
-        {{ isActive('xlsx') ? t('export.exporting') : t('export.listExcel') }}
-      </button>
-
-      <button
-        type="button"
-        class="app-button app-button--secondary app-button--compact"
-        :disabled="!hasListData || isExporting"
-        :title="t('export.exportAsCsv')"
-        @click="exportListCsv"
-      >
-        {{ isActive('csv') ? t('export.exporting') : t('export.listCsv') }}
-      </button>
-    </template>
-
-    <template v-else>
-      <button
-        type="button"
-        class="app-button app-button--secondary app-button--compact"
-        :disabled="!hasInvoiceData || isExporting"
-        :title="t('export.exportAsPdf')"
-        @click="exportDetailsPdf"
-      >
-        {{ isActive('pdf') ? t('export.exporting') : t('export.invoicePdf') }}
-      </button>
-
-      <button
-        type="button"
-        class="app-button app-button--secondary app-button--compact"
-        :disabled="!hasInvoiceData || isExporting"
-        :title="t('export.exportAsWord')"
-        @click="exportDetailsWord"
-      >
-        {{ isActive('docx') ? t('export.exporting') : t('export.invoiceWord') }}
-      </button>
-    </template>
+    <button
+      type="button"
+      class="app-button app-button--secondary app-button--compact"
+      :disabled="!hasExportData || isExporting"
+      @click="exportSelected"
+    >
+      {{ isActive(selectedFormat) ? t('export.exporting') : t('export.title') }}
+    </button>
   </div>
 </template>

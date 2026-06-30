@@ -18,3 +18,16 @@
   padding-inline: 0.5rem;
   text-transform: uppercase;
 }
+
+.app-export-menu {
+  gap: 0.5rem;
+  border-radius: var(--radius-2xl);
+}
+
+.app-export-menu .app-select {
+  min-width: 7.5rem;
+}
+
+.app-export-menu .app-button {
+  min-width: 6.5rem;
+}

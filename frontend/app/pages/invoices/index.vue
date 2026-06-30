@@ -34,21 +34,25 @@ const {
           </p>
         </div>
 
-        <div class="app-page-header__actions">
-          <LanguageSwitcher />
+        <div class="app-page-header__actions app-header-actions">
+          <div class="app-header-actions__top">
+            <LanguageSwitcher />
 
-          <InvoiceExportMenu
-            mode="list"
-            :invoices="invoices"
-          />
+            <InvoiceExportMenu
+              mode="list"
+              :invoices="invoices"
+            />
+          </div>
 
-          <button
-            type="button"
-            class="app-button app-button--primary"
-            @click="openCreateInvoice"
-          >
-            {{ t('invoices.createInvoice') }}
-          </button>
+          <div class="app-header-actions__bottom">
+            <button
+              type="button"
+              class="app-button app-button--primary"
+              @click="openCreateInvoice"
+            >
+              {{ t('invoices.createInvoice') }}
+            </button>
+          </div>
         </div>
       </header>
 
