@@ -2,6 +2,7 @@ import { computed, ref } from 'vue'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import { z } from 'zod'
+import { useInvoicesStore } from '~/stores/invoices'
 import type { ApiErrorResponse, Invoice } from '~/types/invoice'
 
 interface InvoiceCreateFormValues {
@@ -29,7 +30,7 @@ function getDateAfterDays(days: number): string {
 export function useInvoiceCreateForm(
   onCreated: (invoice: Invoice) => void,
 ) {
-  const { createInvoice } = useInvoicesApi()
+  const invoicesStore = useInvoicesStore()
 
   const serverError = ref('')
   const serverValidationErrors = ref<Record<string, string[]>>({})
@@ -99,7 +100,7 @@ export function useInvoiceCreateForm(
     serverValidationErrors.value = {}
 
     try {
-      const createdInvoice = await createInvoice({
+      const createdInvoice = await invoicesStore.createInvoice({
         number: values.number,
         supplier_name: values.supplier_name,
         supplier_tax_id: values.supplier_tax_id,
@@ -115,7 +116,7 @@ export function useInvoiceCreateForm(
     } catch (error) {
       const apiError = error as { data?: ApiErrorResponse }
 
-      serverError.value = apiError.data?.message || 'Failed to create invoice.'
+      serverError.value = apiError.data?.message || invoicesStore.createError || 'Failed to create invoice.'
       serverValidationErrors.value = apiError.data?.errors || {}
     }
   })

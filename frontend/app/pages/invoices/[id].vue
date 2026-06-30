@@ -1,21 +1,18 @@
 <script setup lang="ts">
-import type { Invoice } from '~/types/invoice'
+import { storeToRefs } from 'pinia'
+import { useInvoicesStore } from '~/stores/invoices'
+import type { Invoice, InvoiceFinalStatus } from '~/types/invoice'
 
 const route = useRoute()
 const invoiceId = computed(() => Number(route.params.id))
+const invoicesStore = useInvoicesStore()
 
 const {
-  invoice,
-  isLoading,
-  error,
+  currentInvoice: invoice,
+  isDetailsLoading,
+  detailsError,
   actionError,
-  refreshDetails,
-  setInvoice,
-  canDelete,
-  isActionProcessing,
-  changeCurrentInvoiceStatus,
-  deleteCurrentInvoice,
-} = useInvoiceDetails(invoiceId)
+} = storeToRefs(invoicesStore)
 
 const {
   formatMoney,
@@ -23,12 +20,48 @@ const {
   formatDateTime,
 } = useInvoiceFormatters()
 
+onMounted(() => {
+  void invoicesStore.fetchInvoice(invoiceId.value)
+})
+
+watch(invoiceId, (id) => {
+  void invoicesStore.fetchInvoice(id)
+})
+
 function goBack(): void {
   void navigateTo('/invoices')
 }
 
+function refreshDetails(): void {
+  void invoicesStore.fetchInvoice(invoiceId.value)
+}
+
 function handleUpdated(updatedInvoice: Invoice): void {
-  setInvoice(updatedInvoice)
+  invoicesStore.replaceInvoice(updatedInvoice)
+}
+
+function changeCurrentInvoiceStatus(status: InvoiceFinalStatus): void {
+  if (!invoice.value) {
+    return
+  }
+
+  void invoicesStore.changeInvoiceStatus(invoice.value, status)
+}
+
+function deleteCurrentInvoice(): void {
+  if (!invoice.value) {
+    return
+  }
+
+  const confirmed = window.confirm(`Delete invoice ${invoice.value.number}? This action is allowed only for pending invoices.`)
+
+  if (!confirmed) {
+    return
+  }
+
+  void invoicesStore.deleteInvoice(invoice.value).then(() => {
+    void navigateTo('/invoices')
+  })
 }
 </script>
 
@@ -43,12 +76,12 @@ function handleUpdated(updatedInvoice: Invoice): void {
         Back to invoices
       </button>
 
-      <div v-if="isLoading" class="rounded-2xl border border-slate-200 bg-white p-6 text-slate-500 shadow-sm">
+      <div v-if="isDetailsLoading" class="rounded-2xl border border-slate-200 bg-white p-6 text-slate-500 shadow-sm">
         Loading invoice...
       </div>
 
-      <div v-else-if="error" class="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
-        Failed to load invoice. Check whether the record exists and backend is running.
+      <div v-else-if="detailsError" class="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
+        {{ detailsError }}
       </div>
 
       <div v-else-if="!invoice" class="rounded-2xl border border-slate-200 bg-white p-6 text-slate-500 shadow-sm">
@@ -143,9 +176,9 @@ function handleUpdated(updatedInvoice: Invoice): void {
         <InvoiceEditForm
           :invoice="invoice"
           :lifecycle-error="actionError"
-          :lifecycle-processing="isActionProcessing(invoice.id)"
-          :delete-processing="isActionProcessing(invoice.id, 'delete')"
-          :show-delete="canDelete(invoice)"
+          :lifecycle-processing="invoicesStore.isActionProcessing(invoice.id)"
+          :delete-processing="invoicesStore.isActionProcessing(invoice.id, 'delete')"
+          :show-delete="invoicesStore.canDelete(invoice)"
           @updated="handleUpdated"
           @change-status="changeCurrentInvoiceStatus"
           @delete="deleteCurrentInvoice"
