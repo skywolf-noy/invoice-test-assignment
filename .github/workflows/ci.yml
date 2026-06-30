@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - feature/production-polish
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  docker-tests:
+    name: Docker tests and build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show Docker versions
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Build Docker services
+        run: docker compose build
+
+      - name: Start Docker services
+        run: docker compose up -d postgres backend frontend
+
+      - name: Show Docker service status
+        run: docker compose ps
+
+      - name: Wait for backend to be ready
+        run: |
+          for attempt in {1..30}; do
+            if docker compose exec -T backend php artisan --version; then
+              echo "Backend is ready"
+              exit 0
+            fi
+
+            echo "Waiting for backend... attempt ${attempt}/30"
+            sleep 2
+          done
+
+          echo "Backend did not become ready in time"
+          docker compose logs backend
+          exit 1
+
+      - name: Run backend tests
+        run: docker compose exec -T backend php artisan test
+
+      - name: Run frontend tests
+        run: docker compose exec -T frontend npm run test
+
+      - name: Build frontend
+        run: docker compose exec -T frontend npm run build
+
+      - name: Print Docker logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Stop Docker services
+        if: always()
+        run: docker compose down -v
