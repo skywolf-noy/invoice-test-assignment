@@ -8,7 +8,7 @@ const {
   pending,
   error,
   refresh,
-} = await useAsyncData<Invoice[]>(
+} = useAsyncData<Invoice[]>(
   'invoices',
   () => listInvoices(),
   {
@@ -16,6 +16,12 @@ const {
     default: () => [],
   },
 )
+
+const isHydrated = ref(false)
+
+onMounted(() => {
+  isHydrated.value = true
+})
 
 function handleRefresh(): void {
   void refresh()
@@ -76,7 +82,7 @@ function openInvoice(invoice: Invoice): void {
           </button>
         </div>
 
-        <div v-if="pending" class="p-6 text-slate-500">
+        <div v-if="!isHydrated || pending" class="p-6 text-slate-500">
           Loading invoices...
         </div>
 

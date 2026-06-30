@@ -12,7 +12,7 @@ const {
   pending,
   error,
   refresh,
-} = await useAsyncData<Invoice | null>(
+} = useAsyncData<Invoice | null>(
   () => `invoice-${route.params.id}`,
   () => showInvoice(invoiceId.value),
   {
@@ -20,6 +20,12 @@ const {
     default: () => null,
   },
 )
+
+const isHydrated = ref(false)
+
+onMounted(() => {
+  isHydrated.value = true
+})
 
 function handleRefresh(): void {
   void refresh()
@@ -66,7 +72,7 @@ function handleUpdated(updatedInvoice: Invoice): void {
         Back to invoices
       </button>
 
-      <div v-if="pending" class="rounded-2xl border border-slate-200 bg-white p-6 text-slate-500 shadow-sm">
+      <div v-if="!isHydrated || pending" class="rounded-2xl border border-slate-200 bg-white p-6 text-slate-500 shadow-sm">
         Loading invoice...
       </div>
 
