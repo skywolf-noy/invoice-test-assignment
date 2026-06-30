@@ -1,0 +1,88 @@
+@use "../abstracts/mixins" as mixins;
+
+.app-form {
+  @include mixins.card-shell;
+
+  padding: 1.5rem;
+}
+
+.app-form__header {
+  margin-bottom: 1.5rem;
+}
+
+.app-form__group {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.app-form__group--two {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.app-form__group--three {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.app-field {
+  display: block;
+}
+
+.app-field__label {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.app-field__control {
+  width: 100%;
+  margin-top: 0.5rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  padding: 0.72rem 0.95rem;
+  font-size: 0.875rem;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background-color var(--transition-fast);
+
+  &:focus {
+    @include mixins.focus-ring;
+  }
+
+  &:disabled {
+    background: var(--color-surface-muted);
+    color: var(--color-text-soft);
+  }
+}
+
+.app-field__error {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--color-danger-text);
+  font-size: 0.8125rem;
+}
+
+.app-form__actions {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+@media (min-width: 768px) {
+  .app-form__group--two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .app-form__group--three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .app-form__actions {
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}

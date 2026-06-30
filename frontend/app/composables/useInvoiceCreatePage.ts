@@ -1,6 +1,10 @@
 import type { Invoice } from '~/types/invoice'
 
 export function useInvoiceCreatePage() {
+  const {
+    t,
+  } = useAppI18n()
+
   function goBack(): void {
     void navigateTo('/invoices')
   }
@@ -10,6 +14,7 @@ export function useInvoiceCreatePage() {
   }
 
   return {
+    t,
     goBack,
     handleCreated,
   }

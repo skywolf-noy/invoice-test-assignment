@@ -27,6 +27,15 @@ export function useInvoiceDetailsPage() {
     formatDateTime,
   } = useInvoiceFormatters()
 
+  const {
+    t,
+  } = useAppI18n()
+
+  const {
+    notifySuccess,
+    notifyError,
+  } = useNotifications()
+
   onMounted(() => {
     void detailsStore.fetchInvoice(invoiceId.value)
   })
@@ -52,7 +61,10 @@ export function useInvoiceDetailsPage() {
       return
     }
 
-    void mutationsStore.changeInvoiceStatus(invoice.value, status)
+    void mutationsStore
+      .changeInvoiceStatus(invoice.value, status)
+      .then(() => notifySuccess('notifications.statusUpdated'))
+      .catch(() => notifyError('notifications.failed'))
   }
 
   function deleteInvoice(): void {
@@ -60,15 +72,21 @@ export function useInvoiceDetailsPage() {
       return
     }
 
-    const confirmed = window.confirm(`Delete invoice ${invoice.value.number}? This action is allowed only for pending invoices.`)
+    const confirmed = window.confirm(
+      t('invoices.deleteConfirm', { number: invoice.value.number }),
+    )
 
     if (!confirmed) {
       return
     }
 
-    void mutationsStore.deleteInvoice(invoice.value).then(() => {
-      void navigateTo('/invoices')
-    })
+    void mutationsStore
+      .deleteInvoice(invoice.value)
+      .then(() => {
+        notifySuccess('notifications.deleted')
+        void navigateTo('/invoices')
+      })
+      .catch(() => notifyError('notifications.failed'))
   }
 
   return {
@@ -79,6 +97,7 @@ export function useInvoiceDetailsPage() {
     formatMoney,
     formatDate,
     formatDateTime,
+    t,
     goBack,
     refreshDetails,
     handleUpdated,

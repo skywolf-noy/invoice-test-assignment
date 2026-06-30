@@ -23,6 +23,15 @@ export function useInvoicesPage() {
     formatDate,
   } = useInvoiceFormatters()
 
+  const {
+    t,
+  } = useAppI18n()
+
+  const {
+    notifySuccess,
+    notifyError,
+  } = useNotifications()
+
   onMounted(() => {
     void listStore.fetchInvoices()
   })
@@ -40,17 +49,25 @@ export function useInvoicesPage() {
   }
 
   function changeInvoiceStatus(invoice: Invoice, status: InvoiceFinalStatus): void {
-    void mutationsStore.changeInvoiceStatus(invoice, status)
+    void mutationsStore
+      .changeInvoiceStatus(invoice, status)
+      .then(() => notifySuccess('notifications.statusUpdated'))
+      .catch(() => notifyError('notifications.failed'))
   }
 
   function deleteInvoice(invoice: Invoice): void {
-    const confirmed = window.confirm(`Delete invoice ${invoice.number}? This action is allowed only for pending invoices.`)
+    const confirmed = window.confirm(
+      t('invoices.deleteConfirm', { number: invoice.number }),
+    )
 
     if (!confirmed) {
       return
     }
 
-    void mutationsStore.deleteInvoice(invoice)
+    void mutationsStore
+      .deleteInvoice(invoice)
+      .then(() => notifySuccess('notifications.deleted'))
+      .catch(() => notifyError('notifications.failed'))
   }
 
   return {
@@ -60,6 +77,7 @@ export function useInvoicesPage() {
     actionError,
     formatMoney,
     formatDate,
+    t,
     refreshInvoices,
     openInvoice,
     openCreateInvoice,

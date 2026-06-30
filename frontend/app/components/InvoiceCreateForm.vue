@@ -6,213 +6,115 @@ const emit = defineEmits<{
 }>()
 
 const {
-  serverError,
-  serverValidationErrors,
-  errors,
-  isSubmitting,
+  t,
   number,
-  numberAttrs,
   supplierName,
-  supplierNameAttrs,
   supplierTaxId,
-  supplierTaxIdAttrs,
   netAmount,
-  netAmountAttrs,
   vatAmount,
-  vatAmountAttrs,
   currency,
-  currencyAttrs,
   issueDate,
-  issueDateAttrs,
   dueDate,
-  dueDateAttrs,
   grossAmount,
-  submit,
-} = useInvoiceCreateForm((createdInvoice) => {
-  emit('created', createdInvoice)
-})
+  errors,
+  isCreating,
+  createError,
+  submitForm,
+} = useInvoiceCreateForm((invoice) => emit('created', invoice))
 </script>
 
 <template>
-  <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-    <div class="mb-6">
-      <h2 class="text-lg font-semibold text-slate-950">
-        Create invoice
+  <form class="app-form" @submit.prevent="submitForm">
+    <div class="app-form__header">
+      <h2 class="app-section-title">
+        {{ t('forms.invoiceInformation') }}
       </h2>
-      <p class="mt-1 text-sm text-slate-500">
-        Fill in supplier, dates and financial values. Gross amount is calculated automatically.
+      <p class="app-section-description">
+        {{ t('forms.requiredServerValidation') }}
       </p>
     </div>
 
-    <form class="space-y-6" @submit.prevent="submit">
-      <div class="grid gap-5 md:grid-cols-3">
-        <label class="block">
-          <span class="mb-1 block text-sm font-medium text-slate-700">Invoice number</span>
-          <input
-            v-model="number"
-            v-bind="numberAttrs"
-            type="text"
-            placeholder="INV-2026-004"
-            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
-          >
-          <span v-if="errors.number" class="mt-1 block text-sm text-rose-600">
-            {{ errors.number }}
-          </span>
-          <span v-if="serverValidationErrors.number?.[0]" class="mt-1 block text-sm text-rose-600">
-            {{ serverValidationErrors.number[0] }}
-          </span>
+    <div v-if="createError" class="app-alert app-alert--error">
+      {{ createError }}
+    </div>
+
+    <div class="app-form__group app-form__group--two">
+      <label class="app-field">
+        <span class="app-field__label">{{ t('fields.number') }}</span>
+        <input v-model="number" type="text" class="app-field__control">
+        <span v-if="errors.number" class="app-field__error">{{ errors.number }}</span>
+      </label>
+
+      <label class="app-field">
+        <span class="app-field__label">{{ t('fields.currency') }}</span>
+        <input v-model="currency" type="text" maxlength="3" class="app-field__control">
+        <span v-if="errors.currency" class="app-field__error">{{ errors.currency }}</span>
+      </label>
+
+      <label class="app-field">
+        <span class="app-field__label">{{ t('fields.supplierName') }}</span>
+        <input v-model="supplierName" type="text" class="app-field__control">
+        <span v-if="errors.supplier_name" class="app-field__error">{{ errors.supplier_name }}</span>
+      </label>
+
+      <label class="app-field">
+        <span class="app-field__label">{{ t('fields.supplierTaxId') }}</span>
+        <input v-model="supplierTaxId" type="text" class="app-field__control">
+        <span v-if="errors.supplier_tax_id" class="app-field__error">{{ errors.supplier_tax_id }}</span>
+      </label>
+    </div>
+
+    <div class="app-form__section">
+      <h3 class="app-form__section-title">
+        {{ t('forms.financialFields') }}
+      </h3>
+
+      <div class="app-form__group app-form__group--three">
+        <label class="app-field">
+          <span class="app-field__label">{{ t('fields.netAmount') }}</span>
+          <input v-model="netAmount" type="number" min="0" step="0.01" class="app-field__control">
+          <span v-if="errors.net_amount" class="app-field__error">{{ errors.net_amount }}</span>
         </label>
 
-        <label class="block">
-          <span class="mb-1 block text-sm font-medium text-slate-700">Supplier name</span>
-          <input
-            v-model="supplierName"
-            v-bind="supplierNameAttrs"
-            type="text"
-            placeholder="Supplier LLC"
-            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
-          >
-          <span v-if="errors.supplier_name" class="mt-1 block text-sm text-rose-600">
-            {{ errors.supplier_name }}
-          </span>
-          <span v-if="serverValidationErrors.supplier_name?.[0]" class="mt-1 block text-sm text-rose-600">
-            {{ serverValidationErrors.supplier_name[0] }}
-          </span>
+        <label class="app-field">
+          <span class="app-field__label">{{ t('fields.vatAmount') }}</span>
+          <input v-model="vatAmount" type="number" min="0" step="0.01" class="app-field__control">
+          <span v-if="errors.vat_amount" class="app-field__error">{{ errors.vat_amount }}</span>
         </label>
 
-        <label class="block">
-          <span class="mb-1 block text-sm font-medium text-slate-700">Supplier tax ID</span>
-          <input
-            v-model="supplierTaxId"
-            v-bind="supplierTaxIdAttrs"
-            type="text"
-            placeholder="UA12345678"
-            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
-          >
-          <span v-if="errors.supplier_tax_id" class="mt-1 block text-sm text-rose-600">
-            {{ errors.supplier_tax_id }}
-          </span>
-          <span v-if="serverValidationErrors.supplier_tax_id?.[0]" class="mt-1 block text-sm text-rose-600">
-            {{ serverValidationErrors.supplier_tax_id[0] }}
-          </span>
-        </label>
-      </div>
-
-      <div class="grid gap-5 md:grid-cols-4">
-        <label class="block">
-          <span class="mb-1 block text-sm font-medium text-slate-700">Net amount</span>
-          <input
-            v-model="netAmount"
-            v-bind="netAmountAttrs"
-            type="number"
-            step="0.01"
-            min="0"
-            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
-          >
-          <span v-if="errors.net_amount" class="mt-1 block text-sm text-rose-600">
-            {{ errors.net_amount }}
-          </span>
-          <span v-if="serverValidationErrors.net_amount?.[0]" class="mt-1 block text-sm text-rose-600">
-            {{ serverValidationErrors.net_amount[0] }}
-          </span>
-        </label>
-
-        <label class="block">
-          <span class="mb-1 block text-sm font-medium text-slate-700">VAT amount</span>
-          <input
-            v-model="vatAmount"
-            v-bind="vatAmountAttrs"
-            type="number"
-            step="0.01"
-            min="0"
-            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
-          >
-          <span v-if="errors.vat_amount" class="mt-1 block text-sm text-rose-600">
-            {{ errors.vat_amount }}
-          </span>
-          <span v-if="serverValidationErrors.vat_amount?.[0]" class="mt-1 block text-sm text-rose-600">
-            {{ serverValidationErrors.vat_amount[0] }}
-          </span>
-        </label>
-
-        <label class="block">
-          <span class="mb-1 block text-sm font-medium text-slate-700">Currency</span>
-          <select
-            v-model="currency"
-            v-bind="currencyAttrs"
-            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
-          >
-            <option value="UAH">UAH</option>
-            <option value="EUR">EUR</option>
-            <option value="USD">USD</option>
-          </select>
-          <span v-if="errors.currency" class="mt-1 block text-sm text-rose-600">
-            {{ errors.currency }}
-          </span>
-          <span v-if="serverValidationErrors.currency?.[0]" class="mt-1 block text-sm text-rose-600">
-            {{ serverValidationErrors.currency[0] }}
-          </span>
-        </label>
-
-        <div class="block">
-          <span class="mb-1 block text-sm font-medium text-slate-700">Gross amount</span>
-          <div class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-semibold text-slate-950">
-            {{ grossAmount }} {{ currency }}
-          </div>
-          <p class="mt-1 text-xs text-slate-500">
-            Calculated as net amount + VAT amount.
-          </p>
-          <span v-if="serverValidationErrors.gross_amount?.[0]" class="mt-1 block text-sm text-rose-600">
-            {{ serverValidationErrors.gross_amount[0] }}
-          </span>
+        <div class="app-computed-box">
+          <span class="app-computed-box__label">{{ t('fields.grossAmount') }}</span>
+          <p class="app-computed-box__value">{{ grossAmount }}</p>
+          <p class="app-computed-box__hint">{{ t('forms.calculatedGross') }}</p>
         </div>
       </div>
+    </div>
 
-      <div class="grid gap-5 md:grid-cols-2">
-        <label class="block">
-          <span class="mb-1 block text-sm font-medium text-slate-700">Issue date</span>
-          <input
-            v-model="issueDate"
-            v-bind="issueDateAttrs"
-            type="date"
-            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
-          >
-          <span v-if="errors.issue_date" class="mt-1 block text-sm text-rose-600">
-            {{ errors.issue_date }}
-          </span>
-          <span v-if="serverValidationErrors.issue_date?.[0]" class="mt-1 block text-sm text-rose-600">
-            {{ serverValidationErrors.issue_date[0] }}
-          </span>
+    <div class="app-form__section">
+      <div class="app-form__group app-form__group--two">
+        <label class="app-field">
+          <span class="app-field__label">{{ t('fields.issueDate') }}</span>
+          <input v-model="issueDate" type="date" class="app-field__control">
+          <span v-if="errors.issue_date" class="app-field__error">{{ errors.issue_date }}</span>
         </label>
 
-        <label class="block">
-          <span class="mb-1 block text-sm font-medium text-slate-700">Due date</span>
-          <input
-            v-model="dueDate"
-            v-bind="dueDateAttrs"
-            type="date"
-            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
-          >
-          <span v-if="errors.due_date" class="mt-1 block text-sm text-rose-600">
-            {{ errors.due_date }}
-          </span>
-          <span v-if="serverValidationErrors.due_date?.[0]" class="mt-1 block text-sm text-rose-600">
-            {{ serverValidationErrors.due_date[0] }}
-          </span>
+        <label class="app-field">
+          <span class="app-field__label">{{ t('fields.dueDate') }}</span>
+          <input v-model="dueDate" type="date" class="app-field__control">
+          <span v-if="errors.due_date" class="app-field__error">{{ errors.due_date }}</span>
         </label>
       </div>
+    </div>
 
-      <div v-if="serverError" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-        {{ serverError }}
-      </div>
-
+    <div class="app-form__actions">
+      <span />
       <button
         type="submit"
-        class="inline-flex items-center justify-center rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
-        :disabled="isSubmitting"
+        class="app-button app-button--primary app-button--full"
+        :disabled="isCreating"
       >
-        {{ isSubmitting ? 'Creating...' : 'Create invoice' }}
+        {{ isCreating ? t('forms.creating') : t('forms.createInvoice') }}
       </button>
-    </form>
-  </section>
+    </div>
+  </form>
 </template>

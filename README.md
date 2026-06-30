@@ -1,102 +1,63 @@
 # Invoice Test Assignment
 
-Full-stack test assignment: invoice management module.
+Full-stack invoice management module built with Laravel API, Nuxt frontend, PostgreSQL, Docker Compose, translated UI, notifications, export actions, automated tests, and GitHub Actions CI.
 
-## Stack
+## Tech Stack
 
-- Backend: Laravel 12, PHP 8.4 in Docker (requirement: PHP 8.2+)
-- Database: PostgreSQL 16
-- Frontend: Nuxt 4, Vue 3.5, TypeScript
-- Styling: TailwindCSS 4
-- Frontend validation: vee-validate + zod
-- Environment: Docker Compose
+### Backend
 
-## Project Structure
+- PHP 8.2+
+- Laravel 12
+- PostgreSQL 16
+- REST API
+- Form Requests for validation
+- Service layer for business logic
+- API Resources for JSON responses
+- Feature tests for invoice lifecycle behavior
 
-- backend/ - Laravel REST API
-- frontend/ - Nuxt frontend application
-- docker-compose.yml - local development environment
+### Frontend
 
-## How to Run
+- Nuxt 4
+- Vue 3.5
+- TypeScript
+- Pinia
+- vee-validate
+- zod
+- TailwindCSS 4
+- SCSS design system
+- Vitest
+- Vue Test Utils
 
-Start all services:
+### Infrastructure
 
-    docker compose up --build
+- Docker Compose
+- GitHub Actions CI
+- Separate backend, frontend, and PostgreSQL services
 
-Available URLs:
+## Main Features
 
-- Frontend: http://localhost:3000
-- Backend: http://localhost:8000
-- API: http://localhost:8000/api/invoices
-- PostgreSQL: localhost:5432
+- Invoice list page
+- Invoice details page
+- Invoice creation form
+- Pending invoice edit form
+- Strict invoice lifecycle rules
+- Status badges
+- Status change controls
+- Delete action for pending invoices
+- Ukrainian and English UI translations
+- Language switcher
+- Toast notifications
+- PDF, Excel, Word, and CSV export actions
+- Backend feature tests
+- Frontend unit and component tests
+- Docker-based local environment
+- CI workflow for tests and build
 
-Seed demo data:
+## Invoice Fields
 
-    docker compose exec backend php artisan db:seed --force
+The invoice entity contains:
 
-If the database needs to be recreated:
-
-    docker compose exec backend php artisan migrate:fresh --seed --force
-
-Stop services:
-
-    docker compose down
-
-## API Endpoints
-
-- GET /api/invoices - list invoices
-- GET /api/invoices/{id} - show one invoice
-- POST /api/invoices - create invoice
-- PUT /api/invoices/{id} - update pending invoice
-
-Authentication is not implemented because it is not required by the assignment.
-
-## Backend Structure
-
-Backend code is split into:
-
-- Model: App\Models\Invoice
-- Enum: App\Enums\InvoiceStatus
-- Controller: App\Http\Controllers\Api\InvoiceController
-- Requests: StoreInvoiceRequest, UpdateInvoiceRequest
-- Resource: InvoiceResource
-- Service: InvoiceService
-- Seeder: DatabaseSeeder
-
-Controller handles HTTP-level interaction.
-FormRequest classes handle server-side validation.
-InvoiceService contains business logic for create/update operations.
-InvoiceResource controls the JSON response shape.
-
-## Frontend Structure
-
-Frontend code is split into:
-
-- pages/invoices/index.vue - invoice list page
-- pages/invoices/create.vue - invoice creation page
-- pages/invoices/[id].vue - invoice details page
-- components/InvoiceCreateForm.vue - create form UI
-- components/InvoiceEditForm.vue - edit form UI
-- components/InvoiceStatusBadge.vue - visual status badge
-- composables/useInvoices.ts - API client logic
-- composables/useInvoiceList.ts - invoice list state and actions
-- composables/useInvoiceDetails.ts - invoice details state and actions
-- composables/useInvoiceCreateForm.ts - create form state, validation and submit logic
-- composables/useInvoiceEditForm.ts - edit form state, validation and submit logic
-- composables/useInvoiceFormatters.ts - money and date formatting helpers
-- types/invoice.ts - TypeScript API contracts
-
-Pages describe user flows.
-Components isolate reusable UI pieces.
-Composables keep API calls, page state, form state, validation and submit logic out of UI components.
-Types keep frontend/backend data contracts explicit.
-
-The frontend uses Pinia as the source of truth for invoice list state, current invoice state, loading/error flags and lifecycle actions. Composables are kept for API access, formatting helpers and vee-validate/zod form logic.
-
-## Business Rules
-
-Invoice fields:
-
+- id
 - number
 - supplier_name
 - supplier_tax_id
@@ -107,109 +68,277 @@ Invoice fields:
 - status
 - issue_date
 - due_date
+- created_at
+- updated_at
 
-Validation rules:
+Supported statuses:
 
-- number is required and unique
-- net_amount must be greater than 0
-- vat_amount cannot be negative
-- gross_amount must equal net_amount + vat_amount
-- due_date must be greater than or equal to issue_date
-- only pending invoices can be updated
+- pending
+- approved
+- rejected
 
-gross_amount is calculated on the frontend for UX, but validated and recalculated on the backend before persistence.
+## Invoice Lifecycle Rules
 
-## Decisions and Trade-offs
+The invoice lifecycle is intentionally strict:
 
-- I used auto increment IDs because the assignment allows uuid or auto increment. For a production system, UUID or ULID could be better if public sequential IDs are not acceptable.
-- I did not implement authentication because the assignment explicitly says it is not required.
-- Pagination is not implemented because it is optional in the assignment and the test module is intentionally minimal.
-- The UI is intentionally simple. The focus is on clean flow, validation, API integration, and edge cases rather than visual complexity.
-- Laravel runs through artisan serve in Docker for development simplicity. In production I would use PHP-FPM with Nginx, Caddy, or FrankenPHP.
-- Demo data is created through the seeder, not hardcoded in the frontend.
+- Newly created invoices are always pending.
+- Only pending invoices can be edited.
+- Only pending invoices can be approved or rejected.
+- Approved and rejected invoices are final.
+- Only pending invoices can be deleted.
+- Gross amount is calculated as net amount plus VAT amount.
 
-## UX Edge Cases Covered
+Lifecycle rules are handled in:
 
-- Create invoice form with automatic gross amount calculation
-- Loading state on invoice list and invoice details pages
-- Error state when backend API is unavailable
-- Empty invoice list state
-- Clickable invoice row to open details
-- Status badge with different colors
-- Date formatting in readable form
-- Currency formatting
-- Edit form disabled for approved and rejected invoices
-- Gross amount preview recalculated automatically
-- Frontend validation for amount and due date rules
-- Backend validation errors displayed in the form
-- Refresh action on list and details pages
+    backend/app/Services/InvoiceLifecycleService.php
 
-## What I Would Improve in Production
+General invoice operations are handled in:
 
-- Add authentication and authorization
-- Add pagination, search and filtering
-- Add audit log for invoice changes
-- Add automated backend and frontend tests
-- Add OpenAPI/Swagger documentation
-- Add CI pipeline
-- Store money values as integer minor units or use a dedicated Money value object
-- Add invoice history and status transition rules
-- Improve error reporting and logging
-- Add role-based access control
-- Add better production Docker setup with PHP-FPM and web server
+    backend/app/Services/InvoiceService.php
 
-<!-- frontend-state-start -->
-## Frontend State Management
+## API Endpoints
 
-Pinia is used as the main state layer for the invoice module.
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | /api/invoices | List invoices |
+| GET | /api/invoices/{id} | Show invoice details |
+| POST | /api/invoices | Create invoice |
+| PUT | /api/invoices/{id} | Update pending invoice |
+| PATCH | /api/invoices/{id}/status | Approve or reject pending invoice |
+| DELETE | /api/invoices/{id} | Delete pending invoice |
 
-Main store:
+Authentication is not implemented because it is outside the assignment scope.
 
-- `frontend/app/stores/invoices.ts`
+## Frontend Routes
 
-The store owns:
+| Route | Description |
+|---|---|
+| /invoices | Invoice list |
+| /invoices/create | Create invoice |
+| /invoices/[id] | Invoice details and edit form |
 
-- invoice list state
-- current invoice details state
-- loading flags
-- API error messages
-- create/update actions
-- status transition actions
-- delete action
-- local synchronization between the list and current invoice after updates
+## Localization
 
-Composables are still used, but only for focused responsibilities:
+The frontend has a custom lightweight localization layer.
 
-- `useInvoices.ts` - API client wrapper
-- `useInvoiceCreateForm.ts` - create form validation and submit orchestration
-- `useInvoiceEditForm.ts` - edit form validation and submit orchestration
-- `useInvoiceFormatters.ts` - date and money formatting
+Files:
 
-This keeps UI components cleaner and avoids spreading state mutation logic across pages and components.
-<!-- frontend-state-end -->
+    frontend/app/locales/ua.ts
+    frontend/app/locales/en.ts
+    frontend/app/locales/index.ts
+    frontend/app/composables/useAppI18n.ts
+    frontend/app/stores/locale.ts
 
-<!-- invoice-lifecycle-start -->
-## Invoice lifecycle rules
+Default locale:
 
-The module supports a minimal accounting-oriented invoice lifecycle:
+    ua
 
-- New invoices are created with `pending` status.
-- Pending invoices can be edited.
-- Pending invoices can be approved or rejected.
-- Approved and rejected invoices are treated as final records.
-- Final invoices cannot be edited, deleted or moved back to another status.
-- Deletion is allowed only for pending invoices.
+The selected locale is stored in localStorage.
 
-This mirrors a basic accounting constraint: finalized financial documents should stay immutable for consistency and auditability.
+## Notifications
 
-### Lifecycle API endpoints
+Translated toast notifications are shown after user actions.
 
-- `PATCH /api/invoices/{id}/status` - changes a pending invoice to `approved` or `rejected`.
-- `DELETE /api/invoices/{id}` - deletes only pending invoices.
+Files:
 
-Both lifecycle actions are validated on the backend and reflected in the frontend list and details pages.
+    frontend/app/stores/notifications.ts
+    frontend/app/composables/useNotifications.ts
+    frontend/app/components/AppToastViewport.vue
 
-### Frontend architecture note
+Covered actions:
 
-The frontend uses Pinia as the source of truth for invoice list state, current invoice state, loading/error flags and lifecycle actions. Composables are kept for API access, formatting helpers and vee-validate/zod form logic. This keeps pages and components mostly presentational while centralizing shared invoice state.
-<!-- invoice-lifecycle-end -->
+- invoice created
+- invoice updated
+- invoice status updated
+- invoice deleted
+- file exported
+- action failed
+
+## Export Actions
+
+Invoice list exports:
+
+- PDF
+- Excel
+- CSV
+
+Invoice details exports:
+
+- PDF
+- Word
+
+Export files:
+
+    frontend/app/services/export/exportInvoicesToPdf.ts
+    frontend/app/services/export/exportInvoicesToExcel.ts
+    frontend/app/services/export/exportInvoicesToCsv.ts
+    frontend/app/services/export/exportInvoiceToPdf.ts
+    frontend/app/services/export/exportInvoiceToDocx.ts
+    frontend/app/services/export/invoiceExportData.ts
+    frontend/app/composables/useInvoiceExport.ts
+    frontend/app/components/InvoiceExportMenu.vue
+
+Export libraries are loaded through dynamic imports.
+
+## SCSS Design System
+
+SCSS entry point:
+
+    frontend/app/assets/styles/index.scss
+
+Structure:
+
+    frontend/app/assets/styles/
+      abstracts/
+      base/
+      layout/
+      components/
+
+The UI uses semantic SCSS classes such as:
+
+- app-page
+- app-container
+- app-section
+- app-button
+- app-form
+- app-field
+- app-table
+- app-badge
+- app-toast
+- app-export-menu
+
+## Project Structure
+
+    .
+    ├── backend/
+    │   ├── app/
+    │   ├── database/
+    │   ├── routes/
+    │   └── tests/
+    ├── frontend/
+    │   ├── app/
+    │   └── tests/
+    ├── .github/workflows/
+    └── docker-compose.yml
+
+## Installation
+
+Clone the repository:
+
+    git clone git@github.com:skywolf-noy/invoice-test-assignment.git
+    cd invoice-test-assignment
+
+Start services:
+
+    docker compose up -d postgres backend frontend
+
+Install dependencies if needed:
+
+    docker compose exec backend composer install
+    docker compose exec frontend npm install
+
+Run migrations and seeders:
+
+    docker compose exec backend php artisan migrate --seed
+
+## Local URLs
+
+Frontend:
+
+    http://localhost:3000/invoices
+
+Backend API:
+
+    http://localhost:8000/api/invoices
+
+## Useful Commands
+
+Start services:
+
+    docker compose up -d postgres backend frontend
+
+Stop services:
+
+    docker compose down
+
+Rebuild services:
+
+    docker compose build
+    docker compose up -d postgres backend frontend
+
+Recreate database:
+
+    docker compose exec backend php artisan migrate:fresh --seed
+
+Show invoice API routes:
+
+    docker compose exec backend php artisan route:list --path=api/invoices
+
+## Testing
+
+Backend tests:
+
+    docker compose exec backend php artisan test
+
+Frontend tests:
+
+    docker compose exec frontend npm run test
+
+Frontend production build:
+
+    docker compose exec frontend npm run build
+
+Full local verification:
+
+    docker compose exec backend php artisan test
+    docker compose exec frontend npm run test
+    docker compose exec frontend npm run build
+
+## GitHub Actions CI
+
+Workflow file:
+
+    .github/workflows/ci.yml
+
+The workflow runs on:
+
+- push to main
+- push to feature/production-polish
+- pull request to main
+
+CI checks:
+
+- Docker services build
+- Backend tests
+- Frontend tests
+- Frontend production build
+
+## Testing Coverage Summary
+
+Backend coverage includes:
+
+- invoice creation
+- pending invoice update
+- finalized invoice update restriction
+- status change from pending
+- finalized status change restriction
+- blocking return to pending
+- pending invoice deletion
+- finalized invoice deletion restriction
+
+Frontend coverage includes:
+
+- formatters
+- i18n helpers
+- Pinia stores
+- notifications
+- export data helpers
+- language switcher
+- status badge
+- status select
+- export menu
+- toast viewport
+
+## Notes
+
+This project focuses on invoice management, validation, frontend state, UI flow, clean architecture, tests, Docker-based development, and CI readiness.

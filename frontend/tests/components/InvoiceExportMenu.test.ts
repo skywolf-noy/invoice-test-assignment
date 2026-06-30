@@ -1,0 +1,89 @@
+import { mount } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import InvoiceExportMenu from '~/components/InvoiceExportMenu.vue'
+import { makeInvoice } from '../factories/invoice'
+
+const exportMocks = vi.hoisted(() => ({
+  exportInvoicePdf: vi.fn(),
+  exportInvoiceWord: vi.fn(),
+  exportInvoicesPdf: vi.fn(),
+  exportInvoicesExcel: vi.fn(),
+  exportInvoicesCsv: vi.fn(),
+}))
+
+vi.mock('~/composables/useInvoiceExport', async () => {
+  const vue = await vi.importActual<typeof import('vue')>('vue')
+
+  return {
+    useInvoiceExport: () => ({
+      isExporting: vue.ref(false),
+      activeExportFormat: vue.ref(null),
+      exportInvoicePdf: exportMocks.exportInvoicePdf,
+      exportInvoiceWord: exportMocks.exportInvoiceWord,
+      exportInvoicesPdf: exportMocks.exportInvoicesPdf,
+      exportInvoicesExcel: exportMocks.exportInvoicesExcel,
+      exportInvoicesCsv: exportMocks.exportInvoicesCsv,
+    }),
+  }
+})
+
+describe('InvoiceExportMenu', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.clearAllMocks()
+  })
+
+  it('calls list export actions', async () => {
+    const invoice = makeInvoice()
+
+    const wrapper = mount(InvoiceExportMenu, {
+      props: {
+        mode: 'list',
+        invoices: [invoice],
+      },
+    })
+
+    const buttons = wrapper.findAll('button')
+
+    await buttons[0].trigger('click')
+    await buttons[1].trigger('click')
+    await buttons[2].trigger('click')
+
+    expect(exportMocks.exportInvoicesPdf).toHaveBeenCalledWith([invoice])
+    expect(exportMocks.exportInvoicesExcel).toHaveBeenCalledWith([invoice])
+    expect(exportMocks.exportInvoicesCsv).toHaveBeenCalledWith([invoice])
+  })
+
+  it('calls details export actions', async () => {
+    const invoice = makeInvoice()
+
+    const wrapper = mount(InvoiceExportMenu, {
+      props: {
+        mode: 'details',
+        invoice,
+      },
+    })
+
+    const buttons = wrapper.findAll('button')
+
+    await buttons[0].trigger('click')
+    await buttons[1].trigger('click')
+
+    expect(exportMocks.exportInvoicePdf).toHaveBeenCalledWith(invoice)
+    expect(exportMocks.exportInvoiceWord).toHaveBeenCalledWith(invoice)
+  })
+
+  it('disables list export buttons when there are no invoices', () => {
+    const wrapper = mount(InvoiceExportMenu, {
+      props: {
+        mode: 'list',
+        invoices: [],
+      },
+    })
+
+    expect(
+      wrapper.findAll('button').every((button) => button.attributes('disabled') !== undefined),
+    ).toBe(true)
+  })
+})

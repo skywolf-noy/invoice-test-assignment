@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAppI18n } from '~/composables/useAppI18n'
+import { useInvoiceStatusSelect } from '~/composables/useInvoiceStatusSelect'
 import type { Invoice, InvoiceFinalStatus } from '~/types/invoice'
 
 const props = defineProps<{
@@ -12,32 +14,36 @@ const emit = defineEmits<{
 }>()
 
 const {
+  t,
+} = useAppI18n()
+
+const {
   isLocked,
   handleChange,
 } = useInvoiceStatusSelect(props, emit)
 </script>
 
 <template>
-  <div class="inline-flex flex-col gap-1">
+  <div class="app-status-select">
     <select
       :value="invoice.status"
       :disabled="isLocked || processing"
-      class="h-9 rounded-lg border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+      class="app-select"
       @change="handleChange"
     >
       <option value="pending">
-        Pending
+        {{ t('status.pending') }}
       </option>
       <option value="approved">
-        Approved
+        {{ t('status.approved') }}
       </option>
       <option value="rejected">
-        Rejected
+        {{ t('status.rejected') }}
       </option>
     </select>
 
-    <span v-if="showLockedHint && isLocked" class="text-xs font-medium text-slate-400">
-      Finalised document
+    <span v-if="showLockedHint && isLocked" class="app-status-select__hint">
+      {{ t('invoices.finalisedDocument') }}
     </span>
   </div>
 </template>

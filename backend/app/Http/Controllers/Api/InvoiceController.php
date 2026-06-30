@@ -12,70 +12,56 @@ use App\Models\Invoice;
 use App\Services\InvoiceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Symfony\Component\HttpFoundation\Response;
 
 class InvoiceController extends Controller
 {
+    public function __construct(
+        private readonly InvoiceService $invoiceService,
+    ) {
+    }
+
     public function index(): AnonymousResourceCollection
     {
-        $invoices = Invoice::query()
-            ->orderByDesc('created_at')
-            ->get();
-
-        return InvoiceResource::collection($invoices);
+        return InvoiceResource::collection(
+            $this->invoiceService->list(),
+        );
     }
 
     public function show(Invoice $invoice): InvoiceResource
     {
-        return InvoiceResource::make($invoice);
+        return new InvoiceResource($invoice);
     }
 
-    public function store(StoreInvoiceRequest $request, InvoiceService $invoiceService): InvoiceResource
+    public function store(StoreInvoiceRequest $request): JsonResponse
     {
-        $invoice = $invoiceService->create($request->validated());
+        $invoice = $this->invoiceService->create($request->validated());
 
-        return InvoiceResource::make($invoice)
-            ->additional(['message' => 'Invoice created successfully.']);
+        return (new InvoiceResource($invoice))
+            ->response()
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
-    public function update(
-        UpdateInvoiceRequest $request,
-        Invoice $invoice,
-        InvoiceService $invoiceService
-    ): InvoiceResource {
-        $invoice = $invoiceService->update($invoice, $request->validated());
-
-        return InvoiceResource::make($invoice)
-            ->additional(['message' => 'Invoice updated successfully.']);
-    }
-
-    public function updateStatus(
-        UpdateInvoiceStatusRequest $request,
-        Invoice $invoice,
-        InvoiceService $invoiceService
-    ): InvoiceResource {
-        $data = $request->validated();
-
-        $invoice = $invoiceService->updateStatus(
-            $invoice,
-            InvoiceStatus::from($data['status'])
+    public function update(UpdateInvoiceRequest $request, Invoice $invoice): InvoiceResource
+    {
+        return new InvoiceResource(
+            $this->invoiceService->update($invoice, $request->validated()),
         );
-
-        return InvoiceResource::make($invoice)
-            ->additional(['message' => 'Invoice status updated successfully.']);
     }
 
-    public function destroy(Invoice $invoice, InvoiceService $invoiceService): JsonResponse
+    public function updateStatus(UpdateInvoiceStatusRequest $request, Invoice $invoice): InvoiceResource
     {
-        if ($invoice->status !== InvoiceStatus::Pending) {
-            return response()->json([
-                'message' => 'Only pending invoices can be deleted.',
-            ], 403);
-        }
+        $status = InvoiceStatus::from($request->validated('status'));
 
-        $invoiceService->delete($invoice);
+        return new InvoiceResource(
+            $this->invoiceService->changeStatus($invoice, $status),
+        );
+    }
 
-        return response()->json([
-            'message' => 'Invoice deleted successfully.',
-        ]);
+    public function destroy(Invoice $invoice): JsonResponse
+    {
+        $this->invoiceService->delete($invoice);
+
+        return response()->json(null, Response::HTTP_NO_CONTENT);
     }
 }

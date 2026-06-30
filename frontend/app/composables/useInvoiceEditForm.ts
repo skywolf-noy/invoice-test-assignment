@@ -1,43 +1,90 @@
-import { computed, ref, watch, type Ref } from 'vue'
-import { useForm } from 'vee-validate'
+import { storeToRefs } from 'pinia'
 import { toTypedSchema } from '@vee-validate/zod'
+import { useForm } from 'vee-validate'
+import { computed, watch } from 'vue'
 import { z } from 'zod'
 import { useInvoiceMutationsStore } from '~/stores/invoiceMutations'
-import type { ApiErrorResponse, Invoice } from '~/types/invoice'
+import type { Invoice } from '~/types/invoice'
 
-interface InvoiceEditFormValues {
-  net_amount: number
-  vat_amount: number
+interface EditInvoiceFormValues {
+  net_amount: string
+  vat_amount: string
   due_date: string
 }
 
+interface EditInvoiceFormProps {
+  invoice: Invoice
+}
+
+function isValidAmount(value: string): boolean {
+  const numericValue = Number(value)
+
+  return Number.isFinite(numericValue) && numericValue >= 0
+}
+
+function isValidDate(value: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value))
+}
+
+function getInitialValues(invoice: Invoice): EditInvoiceFormValues {
+  return {
+    net_amount: invoice.net_amount,
+    vat_amount: invoice.vat_amount,
+    due_date: invoice.due_date,
+  }
+}
+
 export function useInvoiceEditForm(
-  invoice: Ref<Invoice>,
+  props: EditInvoiceFormProps,
   onUpdated: (invoice: Invoice) => void,
 ) {
   const invoiceMutationsStore = useInvoiceMutationsStore()
 
-  const isEditable = computed(() => invoice.value.status === 'pending')
-  const serverError = ref('')
-  const serverValidationErrors = ref<Record<string, string[]>>({})
+  const {
+    isUpdating,
+    updateError,
+  } = storeToRefs(invoiceMutationsStore)
+
+  const {
+    t,
+  } = useAppI18n()
+
+  const {
+    notifySuccess,
+    notifyError,
+  } = useNotifications()
+
+  const isLocked = computed(() => props.invoice.status !== 'pending')
 
   const validationSchema = toTypedSchema(
     z.object({
-      net_amount: z.coerce.number().gt(0, 'Net amount must be greater than 0.'),
-      vat_amount: z.coerce.number().min(0, 'VAT amount cannot be negative.'),
-      due_date: z.string().min(1, 'Due date is required.'),
-    }).refine((values) => {
-      const issueDate = Date.parse(invoice.value.issue_date)
-      const dueDate = Date.parse(values.due_date)
-
-      if (Number.isNaN(issueDate) || Number.isNaN(dueDate)) {
-        return false
+      net_amount: z
+        .string()
+        .trim()
+        .min(1, t('validation.required'))
+        .refine(isValidAmount, t('validation.minAmount')),
+      vat_amount: z
+        .string()
+        .trim()
+        .min(1, t('validation.required'))
+        .refine(isValidAmount, t('validation.minAmount')),
+      due_date: z
+        .string()
+        .trim()
+        .min(1, t('validation.required'))
+        .refine(isValidDate, t('validation.invalidDate')),
+    }).superRefine((values, context) => {
+      if (
+        isValidDate(props.invoice.issue_date) &&
+        isValidDate(values.due_date) &&
+        values.due_date < props.invoice.issue_date
+      ) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: t('validation.dueDateAfterIssueDate'),
+          path: ['due_date'],
+        })
       }
-
-      return dueDate >= issueDate
-    }, {
-      path: ['due_date'],
-      message: 'Due date must be greater than or equal to issue date.',
     }),
   )
 
@@ -45,82 +92,67 @@ export function useInvoiceEditForm(
     defineField,
     errors,
     handleSubmit,
-    isSubmitting,
-    setValues,
-  } = useForm<InvoiceEditFormValues>({
+    resetForm,
+    values,
+  } = useForm<EditInvoiceFormValues>({
     validationSchema,
-    initialValues: {
-      net_amount: Number(invoice.value.net_amount),
-      vat_amount: Number(invoice.value.vat_amount),
-      due_date: invoice.value.due_date,
-    },
+    initialValues: getInitialValues(props.invoice),
   })
 
-  const [netAmount, netAmountAttrs] = defineField('net_amount')
-  const [vatAmount, vatAmountAttrs] = defineField('vat_amount')
-  const [dueDate, dueDateAttrs] = defineField('due_date')
+  const [netAmount] = defineField('net_amount')
+  const [vatAmount] = defineField('vat_amount')
+  const [dueDate] = defineField('due_date')
 
   const grossAmount = computed(() => {
-    const net = Number(netAmount.value || 0)
-    const vat = Number(vatAmount.value || 0)
+    const net = Number(values.net_amount)
+    const vat = Number(values.vat_amount)
 
-    return (Math.round((net + vat) * 100) / 100).toFixed(2)
+    const safeNet = Number.isFinite(net) ? net : 0
+    const safeVat = Number.isFinite(vat) ? vat : 0
+
+    return (safeNet + safeVat).toFixed(2)
   })
 
   watch(
-    invoice,
-    (updatedInvoice) => {
-      setValues({
-        net_amount: Number(updatedInvoice.net_amount),
-        vat_amount: Number(updatedInvoice.vat_amount),
-        due_date: updatedInvoice.due_date,
+    () => props.invoice,
+    (invoice) => {
+      resetForm({
+        values: getInitialValues(invoice),
       })
     },
     { deep: true },
   )
 
-  const submitForm = handleSubmit(async (values) => {
-    if (!isEditable.value) {
+  const submitForm = handleSubmit(async (formValues) => {
+    if (isLocked.value) {
       return
     }
 
-    serverError.value = ''
-    serverValidationErrors.value = {}
-
     try {
-      const updatedInvoice = await invoiceMutationsStore.updateInvoice(invoice.value.id, {
-        net_amount: values.net_amount,
-        vat_amount: values.vat_amount,
+      const updatedInvoice = await invoiceMutationsStore.updateInvoice(props.invoice.id, {
+        net_amount: Number(formValues.net_amount).toFixed(2),
+        vat_amount: Number(formValues.vat_amount).toFixed(2),
         gross_amount: grossAmount.value,
-        due_date: values.due_date,
+        due_date: formValues.due_date,
       })
 
+      notifySuccess('notifications.updated')
       onUpdated(updatedInvoice)
-    } catch (error) {
-      const apiError = error as { data?: ApiErrorResponse }
-
-      serverError.value = apiError.data?.message || invoiceMutationsStore.updateError || 'Failed to update invoice.'
-      serverValidationErrors.value = apiError.data?.errors || {}
+    } catch {
+      notifyError('notifications.failed')
     }
   })
 
-  function submit(): void {
-    void submitForm()
-  }
-
   return {
-    isEditable,
-    serverError,
-    serverValidationErrors,
-    errors,
-    isSubmitting,
+    t,
     netAmount,
-    netAmountAttrs,
     vatAmount,
-    vatAmountAttrs,
     dueDate,
-    dueDateAttrs,
     grossAmount,
-    submit,
+    errors,
+    isLocked,
+    isUpdating,
+    updateError,
+    submitForm,
   }
 }

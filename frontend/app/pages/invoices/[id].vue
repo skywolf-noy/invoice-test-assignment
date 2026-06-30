@@ -7,6 +7,7 @@ const {
   formatMoney,
   formatDate,
   formatDateTime,
+  t,
   goBack,
   refreshDetails,
   handleUpdated,
@@ -22,109 +23,124 @@ definePageMeta({
 </script>
 
 <template>
-  <main class="min-h-screen bg-slate-50 px-4 py-8 text-slate-950 sm:px-6 lg:px-8">
-    <div class="mx-auto max-w-5xl">
-      <button
-        type="button"
-        class="mb-6 inline-flex items-center rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-white"
-        @click="goBack"
-      >
-        Back to invoices
-      </button>
+  <main class="app-page">
+    <div class="app-container app-container--md">
+      <div class="app-toolbar app-toolbar--between app-toolbar--center">
+        <button
+          type="button"
+          class="app-button app-button--secondary"
+          @click="goBack"
+        >
+          {{ t('navigation.backToInvoices') }}
+        </button>
 
-      <div v-if="isLoading" class="rounded-2xl border border-slate-200 bg-white p-6 text-slate-500 shadow-sm">
-        Loading invoice...
+        <LanguageSwitcher />
       </div>
 
-      <div v-else-if="error" class="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
+      <div v-if="isLoading" class="app-card">
+        <div class="app-state">
+          {{ t('invoices.loadingDetails') }}
+        </div>
+      </div>
+
+      <div v-else-if="error" class="app-alert app-alert--error">
         {{ error }}
       </div>
 
-      <div v-else-if="!invoice" class="rounded-2xl border border-slate-200 bg-white p-6 text-slate-500 shadow-sm">
-        Invoice not found.
+      <div v-else-if="!invoice" class="app-card">
+        <div class="app-state">
+          {{ t('invoices.notFound') }}
+        </div>
       </div>
 
-      <div v-else class="space-y-6">
-        <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div v-else class="app-stack">
+        <section class="app-details-hero">
+          <div class="app-details-hero__top">
             <div>
-              <p class="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                Invoice details
+              <p class="app-eyebrow">
+                {{ t('invoices.detailsTitle') }}
               </p>
-              <h1 class="mt-2 text-3xl font-bold tracking-tight">
+              <h1 class="app-title">
                 {{ invoice.number }}
               </h1>
-              <p class="mt-2 text-slate-600">
-                {{ invoice.supplier_name }} · Tax ID: {{ invoice.supplier_tax_id }}
+              <p class="app-details-hero__meta">
+                {{ invoice.supplier_name }} · {{ t('fields.supplierTaxId') }}: {{ invoice.supplier_tax_id }}
               </p>
             </div>
 
-            <InvoiceStatusBadge :status="invoice.status" />
+            <div class="app-details-hero__actions">
+              <InvoiceStatusBadge :status="invoice.status" />
+
+              <InvoiceExportMenu
+                mode="details"
+                :invoice="invoice"
+              />
+            </div>
           </div>
 
-          <dl class="mt-8 grid gap-5 md:grid-cols-3">
-            <div class="rounded-xl bg-slate-50 p-4">
-              <dt class="text-sm font-medium text-slate-500">
-                Net amount
+          <dl class="app-grid app-grid--three">
+            <div class="app-metric-card">
+              <dt class="app-metric-card__label">
+                {{ t('fields.netAmount') }}
               </dt>
-              <dd class="mt-1 text-lg font-semibold">
+              <dd class="app-metric-card__value">
                 {{ formatMoney(invoice.net_amount, invoice.currency) }}
               </dd>
             </div>
 
-            <div class="rounded-xl bg-slate-50 p-4">
-              <dt class="text-sm font-medium text-slate-500">
-                VAT amount
+            <div class="app-metric-card">
+              <dt class="app-metric-card__label">
+                {{ t('fields.vatAmount') }}
               </dt>
-              <dd class="mt-1 text-lg font-semibold">
+              <dd class="app-metric-card__value">
                 {{ formatMoney(invoice.vat_amount, invoice.currency) }}
               </dd>
             </div>
 
-            <div class="rounded-xl bg-slate-50 p-4">
-              <dt class="text-sm font-medium text-slate-500">
-                Gross amount
+            <div class="app-metric-card">
+              <dt class="app-metric-card__label">
+                {{ t('fields.grossAmount') }}
               </dt>
-              <dd class="mt-1 text-lg font-semibold">
+              <dd class="app-metric-card__value">
                 {{ formatMoney(invoice.gross_amount, invoice.currency) }}
               </dd>
             </div>
 
-            <div class="rounded-xl bg-slate-50 p-4">
-              <dt class="text-sm font-medium text-slate-500">
-                Issue date
+            <div class="app-metric-card">
+              <dt class="app-metric-card__label">
+                {{ t('fields.issueDate') }}
               </dt>
-              <dd class="mt-1 font-semibold">
+              <dd class="app-metric-card__value">
                 {{ formatDate(invoice.issue_date) }}
               </dd>
             </div>
 
-            <div class="rounded-xl bg-slate-50 p-4">
-              <dt class="text-sm font-medium text-slate-500">
-                Due date
+            <div class="app-metric-card">
+              <dt class="app-metric-card__label">
+                {{ t('fields.dueDate') }}
               </dt>
-              <dd class="mt-1 font-semibold">
+              <dd class="app-metric-card__value">
                 {{ formatDate(invoice.due_date) }}
               </dd>
             </div>
 
-            <div class="rounded-xl bg-slate-50 p-4">
-              <dt class="text-sm font-medium text-slate-500">
-                Last updated
+            <div class="app-metric-card">
+              <dt class="app-metric-card__label">
+                {{ t('fields.lastUpdated') }}
               </dt>
-              <dd class="mt-1 font-semibold">
+              <dd class="app-metric-card__value">
                 {{ formatDateTime(invoice.updated_at) }}
               </dd>
             </div>
           </dl>
 
-          <div class="mt-6">
+          <div class="app-inline-actions">
             <button
               type="button"
-              class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              class="app-button app-button--secondary"
               @click="refreshDetails"
             >
-              Refresh details
+              {{ t('invoices.refreshDetails') }}
             </button>
           </div>
         </section>

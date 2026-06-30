@@ -6,6 +6,7 @@ const {
   actionError,
   formatMoney,
   formatDate,
+  t,
   refreshInvoices,
   openInvoice,
   openCreateInvoice,
@@ -18,123 +19,124 @@ const {
 </script>
 
 <template>
-  <main class="min-h-screen bg-slate-50 px-4 py-8 text-slate-950 sm:px-6 lg:px-8">
-    <div class="mx-auto max-w-6xl">
-      <header class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p class="text-sm font-semibold uppercase tracking-wide text-slate-500">
-            Invoice module
+  <main class="app-page">
+    <div class="app-container">
+      <header class="app-page-header">
+        <div class="app-page-header__content">
+          <p class="app-eyebrow">
+            {{ t('app.module') }}
           </p>
-          <h1 class="mt-2 text-3xl font-bold tracking-tight">
-            Invoices
+          <h1 class="app-title">
+            {{ t('invoices.title') }}
           </h1>
-          <p class="mt-2 max-w-2xl text-slate-600">
-            Minimal full-stack invoice management module with Laravel API and Nuxt frontend.
+          <p class="app-description">
+            {{ t('invoices.moduleDescription') }}
           </p>
         </div>
 
-        <button
-          type="button"
-          class="inline-flex items-center justify-center rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
-          @click="openCreateInvoice"
-        >
-          Create invoice
-        </button>
+        <div class="app-page-header__actions">
+          <LanguageSwitcher />
+
+          <InvoiceExportMenu
+            mode="list"
+            :invoices="invoices"
+          />
+
+          <button
+            type="button"
+            class="app-button app-button--primary"
+            @click="openCreateInvoice"
+          >
+            {{ t('invoices.createInvoice') }}
+          </button>
+        </div>
       </header>
 
-      <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+      <section class="app-section">
+        <div class="app-section__header">
           <div>
-            <h2 class="text-base font-semibold">
-              Invoice list
+            <h2 class="app-section-title">
+              {{ t('invoices.listTitle') }}
             </h2>
-            <p class="text-sm text-slate-500">
-              Sorted by newest records from the backend.
+            <p class="app-section-description">
+              {{ t('invoices.listDescription') }}
             </p>
           </div>
 
           <button
             type="button"
-            class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            class="app-button app-button--secondary"
             @click="refreshInvoices"
           >
-            Refresh
+            {{ t('app.refresh') }}
           </button>
         </div>
 
-        <div v-if="actionError" class="m-5 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
-          {{ actionError }}
+        <div v-if="actionError" class="app-section__body">
+          <div class="app-alert app-alert--error">
+            {{ actionError }}
+          </div>
         </div>
 
-        <div v-if="isLoading" class="p-6 text-slate-500">
-          Loading invoices...
+        <div v-if="isLoading" class="app-state">
+          {{ t('invoices.loadingList') }}
         </div>
 
-        <div v-else-if="error" class="m-5 rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-700">
-          {{ error }}
+        <div v-else-if="error" class="app-section__body">
+          <div class="app-alert app-alert--error">
+            {{ error }}
+          </div>
         </div>
 
-        <div v-else-if="!invoices.length" class="p-6 text-slate-500">
-          No invoices found.
+        <div v-else-if="!invoices.length" class="app-state">
+          {{ t('invoices.noInvoices') }}
         </div>
 
-        <div v-else class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-slate-200">
-            <thead class="bg-slate-50">
+        <div v-else class="app-table-wrap">
+          <table class="app-table">
+            <thead>
               <tr>
-                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Number
-                </th>
-                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Supplier
-                </th>
-                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Gross amount
-                </th>
-                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Status
-                </th>
-                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Due date
-                </th>
-                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Actions
-                </th>
+                <th>{{ t('fields.number') }}</th>
+                <th>{{ t('fields.supplier') }}</th>
+                <th>{{ t('fields.grossAmount') }}</th>
+                <th>{{ t('fields.status') }}</th>
+                <th>{{ t('fields.dueDate') }}</th>
+                <th>{{ t('app.actions') }}</th>
               </tr>
             </thead>
 
-            <tbody class="divide-y divide-slate-100 bg-white">
+            <tbody>
               <tr
                 v-for="invoice in invoices"
                 :key="invoice.id"
-                class="cursor-pointer transition hover:bg-slate-50"
+                class="app-table__row"
                 tabindex="0"
                 role="button"
                 @click="openInvoice(invoice)"
                 @keydown.enter="openInvoice(invoice)"
               >
-                <td class="whitespace-nowrap px-5 py-4 font-semibold text-slate-950">
+                <td class="app-table__cell--strong">
                   {{ invoice.number }}
                 </td>
 
-                <td class="whitespace-nowrap px-5 py-4 text-slate-700">
+                <td class="app-table__cell--muted">
                   {{ invoice.supplier_name }}
                 </td>
 
-                <td class="whitespace-nowrap px-5 py-4 font-medium text-slate-950">
+                <td class="app-table__cell--amount">
                   {{ formatMoney(invoice.gross_amount, invoice.currency) }}
                 </td>
 
-                <td class="whitespace-nowrap px-5 py-4">
+                <td>
                   <InvoiceStatusBadge :status="invoice.status" />
                 </td>
 
-                <td class="whitespace-nowrap px-5 py-4 text-slate-700">
+                <td class="app-table__cell--muted">
                   {{ formatDate(invoice.due_date) }}
                 </td>
 
-                <td class="whitespace-nowrap px-5 py-4" @click.stop @keydown.stop>
-                  <div v-if="canChangeStatus(invoice)" class="flex items-center gap-2">
+                <td @click.stop @keydown.stop>
+                  <div v-if="canChangeStatus(invoice)" class="app-table__actions">
                     <InvoiceStatusSelect
                       :invoice="invoice"
                       :processing="isActionProcessing(invoice.id)"
@@ -144,14 +146,15 @@ const {
                     <button
                       v-if="canDelete(invoice)"
                       type="button"
-                      class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-rose-300 text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
+                      class="app-button app-button--danger app-button--icon"
                       :disabled="isActionProcessing(invoice.id)"
-                      title="Delete invoice"
-                      aria-label="Delete invoice"
+                      :title="t('invoices.deleteInvoice')"
+                      :aria-label="t('invoices.deleteInvoice')"
                       @click="deleteInvoice(invoice)"
                     >
                       <svg
-                        class="h-4 w-4"
+                        width="16"
+                        height="16"
                         viewBox="0 0 24 24"
                         fill="none"
                         aria-hidden="true"
@@ -167,8 +170,8 @@ const {
                     </button>
                   </div>
 
-                  <span v-else class="text-sm font-medium text-slate-400">
-                    Finalised
+                  <span v-else class="app-table__finalised">
+                    {{ t('invoices.finalised') }}
                   </span>
                 </td>
               </tr>
