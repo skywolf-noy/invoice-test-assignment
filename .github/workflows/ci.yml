@@ -13,8 +13,8 @@ permissions:
   contents: read
 
 jobs:
-  docker-tests:
-    name: Docker tests and build
+  backend-tests:
+    name: Backend tests
     runs-on: ubuntu-latest
 
     steps:
@@ -26,11 +26,11 @@ jobs:
           docker --version
           docker compose version
 
-      - name: Build Docker services
-        run: docker compose build
+      - name: Build backend services
+        run: docker compose build postgres backend
 
-      - name: Start Docker services
-        run: docker compose up -d postgres backend frontend
+      - name: Start backend services
+        run: docker compose up -d postgres backend
 
       - name: Show Docker service status
         run: docker compose ps
@@ -54,15 +54,6 @@ jobs:
       - name: Run backend tests
         run: docker compose exec -T backend php artisan test
 
-      - name: Install frontend dependencies
-        run: docker compose exec -T frontend npm install
-
-      - name: Run frontend tests
-        run: docker compose exec -T frontend npm run test
-
-      - name: Build frontend
-        run: docker compose exec -T frontend npm run build
-
       - name: Print Docker logs on failure
         if: failure()
         run: docker compose logs
@@ -70,3 +61,31 @@ jobs:
       - name: Stop Docker services
         if: always()
         run: docker compose down -v
+
+  frontend-tests:
+    name: Frontend tests and build
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Run frontend tests
+        run: npm run test
+
+      - name: Build frontend
+        run: npm run build
