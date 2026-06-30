@@ -3,61 +3,28 @@ import type { Invoice } from '~/types/invoice'
 
 const route = useRoute()
 const router = useRouter()
-const { showInvoice } = useInvoicesApi()
-
 const invoiceId = computed(() => Number(route.params.id))
 
 const {
-  data: invoice,
-  pending,
+  invoice,
+  isLoading,
   error,
-  refresh,
-} = useAsyncData<Invoice | null>(
-  () => `invoice-${route.params.id}`,
-  () => showInvoice(invoiceId.value),
-  {
-    server: false,
-    default: () => null,
-  },
-)
+  refreshDetails,
+  setInvoice,
+} = useInvoiceDetails(invoiceId)
 
-const isHydrated = ref(false)
+const {
+  formatMoney,
+  formatDate,
+  formatDateTime,
+} = useInvoiceFormatters()
 
-onMounted(() => {
-  isHydrated.value = true
-})
-
-function handleRefresh(): void {
-  void refresh()
-}
-
-function formatMoney(amount: string, currency: string): string {
-  return new Intl.NumberFormat('uk-UA', {
-    style: 'currency',
-    currency,
-  }).format(Number(amount))
-}
-
-function formatDateTime(date: string): string {
-  return new Intl.DateTimeFormat('uk-UA', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(date))
-}
-
-function formatDate(date: string): string {
-  return new Intl.DateTimeFormat('uk-UA', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(new Date(date))
+function goBack(): void {
+  void router.push('/invoices')
 }
 
 function handleUpdated(updatedInvoice: Invoice): void {
-  invoice.value = updatedInvoice
+  setInvoice(updatedInvoice)
 }
 </script>
 
@@ -67,12 +34,12 @@ function handleUpdated(updatedInvoice: Invoice): void {
       <button
         type="button"
         class="mb-6 inline-flex items-center rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-white"
-        @click="router.push('/invoices')"
+        @click="goBack"
       >
         Back to invoices
       </button>
 
-      <div v-if="!isHydrated || pending" class="rounded-2xl border border-slate-200 bg-white p-6 text-slate-500 shadow-sm">
+      <div v-if="isLoading" class="rounded-2xl border border-slate-200 bg-white p-6 text-slate-500 shadow-sm">
         Loading invoice...
       </div>
 
@@ -162,7 +129,7 @@ function handleUpdated(updatedInvoice: Invoice): void {
             <button
               type="button"
               class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-              @click="handleRefresh"
+              @click="refreshDetails"
             >
               Refresh details
             </button>

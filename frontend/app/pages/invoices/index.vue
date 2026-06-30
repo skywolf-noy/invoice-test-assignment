@@ -1,50 +1,16 @@
 <script setup lang="ts">
-import type { Invoice } from '~/types/invoice'
-
-const { listInvoices } = useInvoicesApi()
+const {
+  invoices,
+  isLoading,
+  error,
+  refreshInvoices,
+  openInvoice,
+} = useInvoiceList()
 
 const {
-  data: invoices,
-  pending,
-  error,
-  refresh,
-} = useAsyncData<Invoice[]>(
-  'invoices',
-  () => listInvoices(),
-  {
-    server: false,
-    default: () => [],
-  },
-)
-
-const isHydrated = ref(false)
-
-onMounted(() => {
-  isHydrated.value = true
-})
-
-function handleRefresh(): void {
-  void refresh()
-}
-
-function formatMoney(amount: string, currency: string): string {
-  return new Intl.NumberFormat('uk-UA', {
-    style: 'currency',
-    currency,
-  }).format(Number(amount))
-}
-
-function formatDate(date: string): string {
-  return new Intl.DateTimeFormat('uk-UA', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(new Date(date))
-}
-
-function openInvoice(invoice: Invoice): void {
-  navigateTo(`/invoices/${invoice.id}`)
-}
+  formatMoney,
+  formatDate,
+} = useInvoiceFormatters()
 </script>
 
 <template>
@@ -76,13 +42,13 @@ function openInvoice(invoice: Invoice): void {
           <button
             type="button"
             class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-            @click="handleRefresh"
+            @click="refreshInvoices"
           >
             Refresh
           </button>
         </div>
 
-        <div v-if="!isHydrated || pending" class="p-6 text-slate-500">
+        <div v-if="isLoading" class="p-6 text-slate-500">
           Loading invoices...
         </div>
 

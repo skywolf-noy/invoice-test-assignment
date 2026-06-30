@@ -1,15 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { useForm } from 'vee-validate'
-import { toTypedSchema } from '@vee-validate/zod'
-import { z } from 'zod'
-import type { ApiErrorResponse, Invoice } from '~/types/invoice'
-
-interface InvoiceFormValues {
-  net_amount: number
-  vat_amount: number
-  due_date: string
-}
+import { toRef } from 'vue'
+import type { Invoice } from '~/types/invoice'
 
 const props = defineProps<{
   invoice: Invoice
@@ -19,93 +10,24 @@ const emit = defineEmits<{
   updated: [invoice: Invoice]
 }>()
 
-const { updateInvoice } = useInvoicesApi()
-
-const isEditable = computed(() => props.invoice.status === 'pending')
-const serverError = ref('')
-const serverValidationErrors = ref<Record<string, string[]>>({})
-
-const validationSchema = toTypedSchema(
-  z.object({
-    net_amount: z.coerce.number().gt(0, 'Net amount must be greater than 0.'),
-    vat_amount: z.coerce.number().min(0, 'VAT amount cannot be negative.'),
-    due_date: z.string().min(1, 'Due date is required.'),
-  }).refine((values) => {
-    const issueDate = Date.parse(props.invoice.issue_date)
-    const dueDate = Date.parse(values.due_date)
-
-    if (Number.isNaN(issueDate) || Number.isNaN(dueDate)) {
-      return false
-    }
-
-    return dueDate >= issueDate
-  }, {
-    path: ['due_date'],
-    message: 'Due date must be greater than or equal to issue date.',
-  }),
-)
+const invoiceRef = toRef(props, 'invoice')
 
 const {
-  defineField,
+  isEditable,
+  serverError,
+  serverValidationErrors,
   errors,
-  handleSubmit,
   isSubmitting,
-  setValues,
-} = useForm<InvoiceFormValues>({
-  validationSchema,
-  initialValues: {
-    net_amount: Number(props.invoice.net_amount),
-    vat_amount: Number(props.invoice.vat_amount),
-    due_date: props.invoice.due_date,
-  },
-})
-
-const [netAmount, netAmountAttrs] = defineField('net_amount')
-const [vatAmount, vatAmountAttrs] = defineField('vat_amount')
-const [dueDate, dueDateAttrs] = defineField('due_date')
-
-const grossAmount = computed(() => {
-  const net = Number(netAmount.value || 0)
-  const vat = Number(vatAmount.value || 0)
-
-  return (Math.round((net + vat) * 100) / 100).toFixed(2)
-})
-
-watch(
-  () => props.invoice,
-  (invoice) => {
-    setValues({
-      net_amount: Number(invoice.net_amount),
-      vat_amount: Number(invoice.vat_amount),
-      due_date: invoice.due_date,
-    })
-  },
-  { deep: true },
-)
-
-const onSubmit = handleSubmit(async (values) => {
-  if (!isEditable.value) {
-    return
-  }
-
-  serverError.value = ''
-  serverValidationErrors.value = {}
-
-  try {
-    const updatedInvoice = await updateInvoice(props.invoice.id, {
-      net_amount: values.net_amount,
-      vat_amount: values.vat_amount,
-      gross_amount: grossAmount.value,
-      due_date: values.due_date,
-    })
-
-    emit('updated', updatedInvoice)
-  } catch (error) {
-    const apiError = error as { data?: ApiErrorResponse }
-
-    serverError.value = apiError.data?.message || 'Failed to update invoice.'
-    serverValidationErrors.value = apiError.data?.errors || {}
-  }
+  netAmount,
+  netAmountAttrs,
+  vatAmount,
+  vatAmountAttrs,
+  dueDate,
+  dueDateAttrs,
+  grossAmount,
+  submit,
+} = useInvoiceEditForm(invoiceRef, (updatedInvoice) => {
+  emit('updated', updatedInvoice)
 })
 </script>
 
@@ -129,7 +51,7 @@ const onSubmit = handleSubmit(async (values) => {
       </div>
     </div>
 
-    <form class="space-y-5" @submit.prevent="onSubmit">
+    <form class="space-y-5" @submit.prevent="submit">
       <fieldset :disabled="!isEditable || isSubmitting" class="space-y-5 disabled:opacity-60">
         <div class="grid gap-5 md:grid-cols-3">
           <label class="block">
