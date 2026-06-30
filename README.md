@@ -157,3 +157,29 @@ gross_amount is calculated on the frontend for UX, but validated and recalculate
 - Improve error reporting and logging
 - Add role-based access control
 - Add better production Docker setup with PHP-FPM and web server
+
+<!-- invoice-lifecycle-start -->
+## Invoice lifecycle rules
+
+The module supports a minimal accounting-oriented invoice lifecycle:
+
+- New invoices are created with `pending` status.
+- Pending invoices can be edited.
+- Pending invoices can be approved or rejected.
+- Approved and rejected invoices are treated as final records.
+- Final invoices cannot be edited, deleted or moved back to another status.
+- Deletion is allowed only for pending invoices.
+
+This mirrors a basic accounting constraint: finalized financial documents should stay immutable for consistency and auditability.
+
+### Lifecycle API endpoints
+
+- `PATCH /api/invoices/{id}/status` - changes a pending invoice to `approved` or `rejected`.
+- `DELETE /api/invoices/{id}` - deletes only pending invoices.
+
+Both lifecycle actions are validated on the backend and reflected in the frontend list and details pages.
+
+### Frontend architecture note
+
+The frontend uses composables instead of Pinia for this assignment because invoice list state, details state, creation form state, edit form state and lifecycle action state are local to the invoice module. This keeps components mostly presentational without introducing unnecessary global state.
+<!-- invoice-lifecycle-end -->

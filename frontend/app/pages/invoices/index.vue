@@ -3,9 +3,16 @@ const {
   invoices,
   isLoading,
   error,
+  actionError,
   refreshInvoices,
   openInvoice,
   openCreateInvoice,
+  canChangeStatus,
+  canDelete,
+  isActionProcessing,
+  approveInvoice,
+  rejectInvoice,
+  deleteInvoiceFromList,
 } = useInvoiceList()
 
 const {
@@ -59,6 +66,10 @@ const {
           </button>
         </div>
 
+        <div v-if="actionError" class="m-5 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+          {{ actionError }}
+        </div>
+
         <div v-if="isLoading" class="p-6 text-slate-500">
           Loading invoices...
         </div>
@@ -90,6 +101,9 @@ const {
                 <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Due date
                 </th>
+                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Actions
+                </th>
               </tr>
             </thead>
 
@@ -117,6 +131,41 @@ const {
                 </td>
                 <td class="whitespace-nowrap px-5 py-4 text-slate-700">
                   {{ formatDate(invoice.due_date) }}
+                </td>
+                <td class="whitespace-nowrap px-5 py-4" @click.stop @keydown.stop>
+                  <div v-if="canChangeStatus(invoice)" class="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      class="rounded-lg border border-emerald-300 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50 disabled:opacity-50"
+                      :disabled="isActionProcessing(invoice.id)"
+                      @click="approveInvoice(invoice)"
+                    >
+                      {{ isActionProcessing(invoice.id, 'approve') ? 'Approving...' : 'Approve' }}
+                    </button>
+
+                    <button
+                      type="button"
+                      class="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-50 disabled:opacity-50"
+                      :disabled="isActionProcessing(invoice.id)"
+                      @click="rejectInvoice(invoice)"
+                    >
+                      {{ isActionProcessing(invoice.id, 'reject') ? 'Rejecting...' : 'Reject' }}
+                    </button>
+
+                    <button
+                      v-if="canDelete(invoice)"
+                      type="button"
+                      class="rounded-lg border border-rose-300 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
+                      :disabled="isActionProcessing(invoice.id)"
+                      @click="deleteInvoiceFromList(invoice)"
+                    >
+                      {{ isActionProcessing(invoice.id, 'delete') ? 'Deleting...' : 'Delete' }}
+                    </button>
+                  </div>
+
+                  <span v-else class="text-xs font-medium text-slate-400">
+                    Locked
+                  </span>
                 </td>
               </tr>
             </tbody>

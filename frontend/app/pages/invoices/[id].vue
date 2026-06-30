@@ -8,8 +8,15 @@ const {
   invoice,
   isLoading,
   error,
+  actionError,
   refreshDetails,
   setInvoice,
+  canChangeStatus,
+  canDelete,
+  isActionProcessing,
+  approveInvoice,
+  rejectInvoice,
+  deleteCurrentInvoice,
 } = useInvoiceDetails(invoiceId)
 
 const {
@@ -124,7 +131,7 @@ function handleUpdated(updatedInvoice: Invoice): void {
             </div>
           </dl>
 
-          <div class="mt-6">
+          <div class="mt-6 flex flex-wrap gap-3">
             <button
               type="button"
               class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
@@ -132,6 +139,55 @@ function handleUpdated(updatedInvoice: Invoice): void {
             >
               Refresh details
             </button>
+          </div>
+        </section>
+
+        <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div class="mb-5">
+            <h2 class="text-lg font-semibold text-slate-950">
+              Status and deletion
+            </h2>
+            <p class="mt-1 text-sm text-slate-500">
+              Pending invoices can be approved, rejected or deleted. Final invoices are locked for accounting consistency.
+            </p>
+          </div>
+
+          <div v-if="actionError" class="mb-5 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+            {{ actionError }}
+          </div>
+
+          <div v-if="canChangeStatus(invoice)" class="flex flex-wrap gap-3">
+            <button
+              type="button"
+              class="rounded-xl border border-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 disabled:opacity-50"
+              :disabled="isActionProcessing(invoice.id)"
+              @click="approveInvoice"
+            >
+              {{ isActionProcessing(invoice.id, 'approve') ? 'Approving...' : 'Approve invoice' }}
+            </button>
+
+            <button
+              type="button"
+              class="rounded-xl border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-50 disabled:opacity-50"
+              :disabled="isActionProcessing(invoice.id)"
+              @click="rejectInvoice"
+            >
+              {{ isActionProcessing(invoice.id, 'reject') ? 'Rejecting...' : 'Reject invoice' }}
+            </button>
+
+            <button
+              v-if="canDelete(invoice)"
+              type="button"
+              class="rounded-xl border border-rose-300 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
+              :disabled="isActionProcessing(invoice.id)"
+              @click="deleteCurrentInvoice"
+            >
+              {{ isActionProcessing(invoice.id, 'delete') ? 'Deleting...' : 'Delete invoice' }}
+            </button>
+          </div>
+
+          <div v-else class="rounded-xl bg-slate-50 p-4 text-sm text-slate-600">
+            This invoice is finalized. Status changes and deletion are disabled.
           </div>
         </section>
 

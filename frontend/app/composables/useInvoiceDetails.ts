@@ -5,6 +5,15 @@ export function useInvoiceDetails(invoiceId: Ref<number>) {
   const { showInvoice } = useInvoicesApi()
 
   const {
+    actionError,
+    canChangeStatus,
+    canDelete,
+    isActionProcessing,
+    changeStatus,
+    removeInvoice,
+  } = useInvoiceLifecycleActions()
+
+  const {
     data: invoice,
     pending,
     error,
@@ -34,11 +43,51 @@ export function useInvoiceDetails(invoiceId: Ref<number>) {
     invoice.value = updatedInvoice
   }
 
+  async function approveInvoice(): Promise<void> {
+    if (!invoice.value) {
+      return
+    }
+
+    const updatedInvoice = await changeStatus(invoice.value, 'approved')
+    setInvoice(updatedInvoice)
+  }
+
+  async function rejectInvoice(): Promise<void> {
+    if (!invoice.value) {
+      return
+    }
+
+    const updatedInvoice = await changeStatus(invoice.value, 'rejected')
+    setInvoice(updatedInvoice)
+  }
+
+  async function deleteCurrentInvoice(): Promise<void> {
+    if (!invoice.value) {
+      return
+    }
+
+    const confirmed = window.confirm(`Delete invoice ${invoice.value.number}? This action is allowed only for pending invoices.`)
+
+    if (!confirmed) {
+      return
+    }
+
+    await removeInvoice(invoice.value)
+    await navigateTo('/invoices')
+  }
+
   return {
     invoice,
     isLoading,
     error,
+    actionError,
     refreshDetails,
     setInvoice,
+    canChangeStatus,
+    canDelete,
+    isActionProcessing,
+    approveInvoice,
+    rejectInvoice,
+    deleteCurrentInvoice,
   }
 }

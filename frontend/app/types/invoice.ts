@@ -1,4 +1,5 @@
 export type InvoiceStatus = 'pending' | 'approved' | 'rejected'
+export type InvoiceFinalStatus = 'approved' | 'rejected'
 
 export interface Invoice {
   id: number
@@ -25,6 +26,10 @@ export interface ApiSingleResponse<T> {
   message?: string
 }
 
+export interface ApiMessageResponse {
+  message: string
+}
+
 export interface ApiErrorResponse {
   message?: string
   errors?: Record<string, string[]>
@@ -47,4 +52,8 @@ export interface UpdateInvoicePayload {
   vat_amount: number
   gross_amount: string
   due_date: string
+}
+
+export interface UpdateInvoiceStatusPayload {
+  status: InvoiceFinalStatus
 }

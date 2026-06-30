@@ -33,6 +33,20 @@ class InvoiceService
         return $invoice->refresh();
     }
 
+    public function updateStatus(Invoice $invoice, InvoiceStatus $status): Invoice
+    {
+        $invoice->update([
+            'status' => $status->value,
+        ]);
+
+        return $invoice->refresh();
+    }
+
+    public function delete(Invoice $invoice): void
+    {
+        $invoice->delete();
+    }
+
     private function calculateGrossAmount(string $netAmount, string $vatAmount): string
     {
         return bcadd($netAmount, $vatAmount, 2);
