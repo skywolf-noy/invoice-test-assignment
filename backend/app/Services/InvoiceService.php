@@ -4,51 +4,67 @@ namespace App\Services;
 
 use App\Enums\InvoiceStatus;
 use App\Models\Invoice;
+use Illuminate\Database\Eloquent\Collection;
 
 class InvoiceService
 {
+    public function __construct(
+        private readonly InvoiceLifecycleService $invoiceLifecycleService,
+    ) {
+    }
+
+    /**
+     * @return Collection<int, Invoice>
+     */
+    public function list(): Collection
+    {
+        return Invoice::query()
+            ->latest('created_at')
+            ->latest('id')
+            ->get();
+    }
+
     public function create(array $data): Invoice
     {
-        $data['status'] = $data['status'] ?? InvoiceStatus::Pending->value;
-        $data['gross_amount'] = $this->calculateGrossAmount(
-            (string) $data['net_amount'],
-            (string) $data['vat_amount']
-        );
+        $data['status'] = 'pending';
+        $data['gross_amount'] = $this->calculateGrossAmount($data);
 
-        return Invoice::create($data);
+        return Invoice::query()
+            ->create($data)
+            ->refresh();
     }
 
     public function update(Invoice $invoice, array $data): Invoice
     {
-        $invoice->update([
-            'net_amount' => $data['net_amount'],
-            'vat_amount' => $data['vat_amount'],
-            'gross_amount' => $this->calculateGrossAmount(
-                (string) $data['net_amount'],
-                (string) $data['vat_amount']
-            ),
-            'due_date' => $data['due_date'],
-        ]);
+        $this->invoiceLifecycleService->assertCanUpdate($invoice);
+
+        $data['gross_amount'] = $this->calculateGrossAmount($data, $invoice);
+
+        $invoice->update($data);
 
         return $invoice->refresh();
     }
 
-    public function updateStatus(Invoice $invoice, InvoiceStatus $status): Invoice
+    public function changeStatus(Invoice $invoice, InvoiceStatus $status): Invoice
     {
-        $invoice->update([
-            'status' => $status->value,
-        ]);
-
-        return $invoice->refresh();
+        return $this->invoiceLifecycleService->changeStatus($invoice, $status);
     }
 
     public function delete(Invoice $invoice): void
     {
-        $invoice->delete();
+        $this->invoiceLifecycleService->delete($invoice);
     }
 
-    private function calculateGrossAmount(string $netAmount, string $vatAmount): string
+    private function calculateGrossAmount(array $data, ?Invoice $invoice = null): string
     {
-        return bcadd($netAmount, $vatAmount, 2);
+        $netAmount = $data['net_amount'] ?? $invoice?->net_amount ?? 0;
+        $vatAmount = $data['vat_amount'] ?? $invoice?->vat_amount ?? 0;
+
+        return number_format(
+            (float) $netAmount + (float) $vatAmount,
+            2,
+            '.',
+            '',
+        );
     }
 }
