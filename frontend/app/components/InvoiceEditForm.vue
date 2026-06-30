@@ -118,21 +118,33 @@ function handleDelete(): void {
           </div>
         </div>
 
-        <label class="block max-w-sm">
-          <span class="mb-1 block text-sm font-medium text-slate-700">Due date</span>
-          <input
-            v-model="dueDate"
-            v-bind="dueDateAttrs"
-            type="date"
-            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
-          >
-          <span v-if="errors.due_date" class="mt-1 block text-sm text-rose-600">
-            {{ errors.due_date }}
-          </span>
-          <span v-if="serverValidationErrors.due_date?.[0]" class="mt-1 block text-sm text-rose-600">
-            {{ serverValidationErrors.due_date[0] }}
-          </span>
-        </label>
+        <div class="grid gap-5 md:grid-cols-3">
+          <label class="block">
+            <span class="mb-1 block text-sm font-medium text-slate-700">Due date</span>
+            <input
+              v-model="dueDate"
+              v-bind="dueDateAttrs"
+              type="date"
+              class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+            >
+            <span v-if="errors.due_date" class="mt-1 block text-sm text-rose-600">
+              {{ errors.due_date }}
+            </span>
+            <span v-if="serverValidationErrors.due_date?.[0]" class="mt-1 block text-sm text-rose-600">
+              {{ serverValidationErrors.due_date[0] }}
+            </span>
+          </label>
+
+          <div class="block">
+            <span class="mb-1 block text-sm font-medium text-slate-700">Status</span>
+            <InvoiceStatusSelect
+              :invoice="invoice"
+              :processing="lifecycleProcessing"
+              show-locked-hint
+              @change-status="handleStatusChange"
+            />
+          </div>
+        </div>
       </fieldset>
 
       <div v-if="serverError" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
@@ -144,20 +156,6 @@ function handleDelete(): void {
       </div>
 
       <div class="border-t border-slate-200 pt-5">
-        <div class="mb-4 grid gap-4 md:grid-cols-3">
-          <div>
-            <label class="mb-1 block text-sm font-medium text-slate-700">
-              Status
-            </label>
-            <InvoiceStatusSelect
-              :invoice="invoice"
-              :processing="lifecycleProcessing"
-              show-locked-hint
-              @change-status="handleStatusChange"
-            />
-          </div>
-        </div>
-
         <div class="flex flex-wrap items-center gap-3">
           <button
             type="submit"
