@@ -21,6 +21,10 @@ const {
   },
 )
 
+function handleRefresh(): void {
+  void refresh()
+}
+
 function formatMoney(amount: string, currency: string): string {
   return new Intl.NumberFormat('uk-UA', {
     style: 'currency',
@@ -152,7 +156,7 @@ function handleUpdated(updatedInvoice: Invoice): void {
             <button
               type="button"
               class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-              @click="refresh"
+              @click="handleRefresh"
             >
               Refresh details
             </button>
