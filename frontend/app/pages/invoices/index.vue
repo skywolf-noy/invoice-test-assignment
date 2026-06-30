@@ -7,6 +7,7 @@ const {
   refreshInvoices,
   openInvoice,
   openCreateInvoice,
+  canChangeStatus,
   canDelete,
   isActionProcessing,
   changeInvoiceStatusFromList,
@@ -100,7 +101,7 @@ const {
                   Due date
                 </th>
                 <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Lifecycle
+                  Actions
                 </th>
               </tr>
             </thead>
@@ -118,20 +119,25 @@ const {
                 <td class="whitespace-nowrap px-5 py-4 font-semibold text-slate-950">
                   {{ invoice.number }}
                 </td>
+
                 <td class="whitespace-nowrap px-5 py-4 text-slate-700">
                   {{ invoice.supplier_name }}
                 </td>
+
                 <td class="whitespace-nowrap px-5 py-4 font-medium text-slate-950">
                   {{ formatMoney(invoice.gross_amount, invoice.currency) }}
                 </td>
+
                 <td class="whitespace-nowrap px-5 py-4">
                   <InvoiceStatusBadge :status="invoice.status" />
                 </td>
+
                 <td class="whitespace-nowrap px-5 py-4 text-slate-700">
                   {{ formatDate(invoice.due_date) }}
                 </td>
+
                 <td class="whitespace-nowrap px-5 py-4" @click.stop @keydown.stop>
-                  <div class="flex flex-wrap items-start gap-2">
+                  <div v-if="canChangeStatus(invoice)" class="flex items-center gap-2">
                     <InvoiceStatusSelect
                       :invoice="invoice"
                       :processing="isActionProcessing(invoice.id)"
@@ -141,13 +147,32 @@ const {
                     <button
                       v-if="canDelete(invoice)"
                       type="button"
-                      class="rounded-lg border border-rose-300 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
+                      class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-rose-300 text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
                       :disabled="isActionProcessing(invoice.id)"
+                      title="Delete invoice"
+                      aria-label="Delete invoice"
                       @click="deleteInvoiceFromList(invoice)"
                     >
-                      {{ isActionProcessing(invoice.id, 'delete') ? 'Deleting...' : 'Delete' }}
+                      <svg
+                        class="h-4 w-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M9 3h6m-8 4h10m-9 0 .7 13h6.6L16 7M10 11v5m4-5v5"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
                     </button>
                   </div>
+
+                  <span v-else class="text-sm text-slate-300">
+                    —
+                  </span>
                 </td>
               </tr>
             </tbody>

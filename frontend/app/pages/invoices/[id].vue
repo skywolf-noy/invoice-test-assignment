@@ -129,7 +129,7 @@ function handleUpdated(updatedInvoice: Invoice): void {
             </div>
           </dl>
 
-          <div class="mt-6 flex flex-wrap gap-3">
+          <div class="mt-6">
             <button
               type="button"
               class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
@@ -140,54 +140,16 @@ function handleUpdated(updatedInvoice: Invoice): void {
           </div>
         </section>
 
-        <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div class="mb-5">
-            <h2 class="text-lg font-semibold text-slate-950">
-              Lifecycle controls
-            </h2>
-            <p class="mt-1 text-sm text-slate-500">
-              Change pending invoice status through the dropdown. Final invoices are locked for accounting consistency.
-            </p>
-          </div>
-
-          <div v-if="actionError" class="mb-5 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
-            {{ actionError }}
-          </div>
-
-          <div class="flex flex-wrap items-start gap-3">
-            <div>
-              <label class="mb-1 block text-sm font-medium text-slate-700">
-                Status
-              </label>
-              <InvoiceStatusSelect
-                :invoice="invoice"
-                :processing="isActionProcessing(invoice.id)"
-                @change-status="changeCurrentInvoiceStatus"
-              />
-            </div>
-
-            <div>
-              <label class="mb-1 block text-sm font-medium text-slate-700">
-                Delete
-              </label>
-              <button
-                v-if="canDelete(invoice)"
-                type="button"
-                class="rounded-lg border border-rose-300 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
-                :disabled="isActionProcessing(invoice.id)"
-                @click="deleteCurrentInvoice"
-              >
-                {{ isActionProcessing(invoice.id, 'delete') ? 'Deleting...' : 'Delete invoice' }}
-              </button>
-
-              <span v-else class="inline-flex rounded-lg bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-400">
-                Delete locked
-              </span>
-            </div>
-          </div>
-        </section>
-
-        <InvoiceEditForm :invoice="invoice" @updated="handleUpdated" />
+        <InvoiceEditForm
+          :invoice="invoice"
+          :lifecycle-error="actionError"
+          :lifecycle-processing="isActionProcessing(invoice.id)"
+          :delete-processing="isActionProcessing(invoice.id, 'delete')"
+          :show-delete="canDelete(invoice)"
+          @updated="handleUpdated"
+          @change-status="changeCurrentInvoiceStatus"
+          @delete="deleteCurrentInvoice"
+        />
       </div>
     </div>
   </main>

@@ -1,13 +1,19 @@
 <script setup lang="ts">
 import { toRef } from 'vue'
-import type { Invoice } from '~/types/invoice'
+import type { Invoice, InvoiceFinalStatus } from '~/types/invoice'
 
 const props = defineProps<{
   invoice: Invoice
+  lifecycleError?: string
+  lifecycleProcessing?: boolean
+  deleteProcessing?: boolean
+  showDelete?: boolean
 }>()
 
 const emit = defineEmits<{
   updated: [invoice: Invoice]
+  'change-status': [status: InvoiceFinalStatus]
+  delete: []
 }>()
 
 const invoiceRef = toRef(props, 'invoice')
@@ -29,6 +35,14 @@ const {
 } = useInvoiceEditForm(invoiceRef, (updatedInvoice) => {
   emit('updated', updatedInvoice)
 })
+
+function handleStatusChange(status: InvoiceFinalStatus): void {
+  emit('change-status', status)
+}
+
+function handleDelete(): void {
+  emit('delete')
+}
 </script>
 
 <template>
@@ -39,7 +53,7 @@ const {
           Edit invoice
         </h2>
         <p class="mt-1 text-sm text-slate-500">
-          Only pending invoices can be updated.
+          Pending invoices can be edited, approved, rejected or deleted. Final invoices are locked.
         </p>
       </div>
 
@@ -119,19 +133,51 @@ const {
             {{ serverValidationErrors.due_date[0] }}
           </span>
         </label>
+      </fieldset>
 
-        <div v-if="serverError" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-          {{ serverError }}
+      <div v-if="serverError" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        {{ serverError }}
+      </div>
+
+      <div v-if="lifecycleError" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        {{ lifecycleError }}
+      </div>
+
+      <div class="border-t border-slate-200 pt-5">
+        <div class="mb-4 grid gap-4 md:grid-cols-3">
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700">
+              Status
+            </label>
+            <InvoiceStatusSelect
+              :invoice="invoice"
+              :processing="lifecycleProcessing"
+              show-locked-hint
+              @change-status="handleStatusChange"
+            />
+          </div>
         </div>
 
-        <button
-          type="submit"
-          class="inline-flex items-center justify-center rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
-          :disabled="!isEditable || isSubmitting"
-        >
-          {{ isSubmitting ? 'Saving...' : 'Save changes' }}
-        </button>
-      </fieldset>
+        <div class="flex flex-wrap items-center gap-3">
+          <button
+            type="submit"
+            class="inline-flex items-center justify-center rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+            :disabled="!isEditable || isSubmitting"
+          >
+            {{ isSubmitting ? 'Saving...' : 'Save changes' }}
+          </button>
+
+          <button
+            v-if="showDelete"
+            type="button"
+            class="inline-flex items-center justify-center rounded-xl border border-rose-300 px-5 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50"
+            :disabled="deleteProcessing"
+            @click="handleDelete"
+          >
+            {{ deleteProcessing ? 'Deleting...' : 'Delete invoice' }}
+          </button>
+        </div>
+      </div>
     </form>
   </section>
 </template>

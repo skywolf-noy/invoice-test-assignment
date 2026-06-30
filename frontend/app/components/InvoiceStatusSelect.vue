@@ -5,6 +5,7 @@ import type { Invoice, InvoiceFinalStatus } from '~/types/invoice'
 const props = defineProps<{
   invoice: Invoice
   processing?: boolean
+  showLockedHint?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -44,8 +45,8 @@ function handleChange(event: Event): void {
       </option>
     </select>
 
-    <span v-if="isLocked" class="text-xs font-medium text-slate-400">
-      Finalized
+    <span v-if="showLockedHint && isLocked" class="text-xs font-medium text-slate-400">
+      Finalized document
     </span>
   </div>
 </template>
