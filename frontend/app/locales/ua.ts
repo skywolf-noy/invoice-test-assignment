@@ -18,7 +18,7 @@ export const ua = {
   },
 
   navigation: {
-    backToInvoices: 'Назад до інвойсів',
+    backToInvoices: 'Назад до рахунків',
   },
 
   invoices: {

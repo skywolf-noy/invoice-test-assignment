@@ -357,3 +357,89 @@
     grid-template-columns: minmax(0, 1fr) 22rem;
   }
 }
+
+/* Final control alignment polish */
+.app-action-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 0.75rem;
+}
+
+.app-page-header__actions.app-action-row {
+  align-content: flex-start;
+}
+
+.app-action-row .app-button--primary {
+  min-width: 13.5rem;
+}
+
+.app-select {
+  min-height: 2.75rem;
+  padding-right: 2.65rem;
+}
+
+.app-select--compact {
+  min-width: 5.25rem;
+  height: 2.75rem;
+  min-height: 2.75rem;
+  padding-left: 1rem;
+  padding-right: 2.4rem;
+}
+
+.app-details-hero__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 1.25rem;
+}
+
+.app-details-hero__toolbar-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.app-details-hero__toolbar-actions .app-badge {
+  order: 3;
+}
+
+.app-details-hero__top {
+  margin-top: 0.25rem;
+}
+
+.app-details-hero__actions {
+  min-width: 0;
+}
+
+@media (max-width: 767px) {
+  .app-details-hero__toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .app-details-hero__toolbar-actions {
+    justify-content: flex-start;
+  }
+
+  .app-action-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .app-action-row > * {
+    width: 100%;
+  }
+}
+
+@media (min-width: 768px) {
+  .app-page-header__actions.app-action-row {
+    justify-content: flex-end;
+    min-width: 38rem;
+  }
+}

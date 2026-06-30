@@ -25,18 +25,6 @@ definePageMeta({
 <template>
   <main class="app-page">
     <div class="app-container app-container--md">
-      <div class="app-toolbar app-toolbar--between app-toolbar--center">
-        <button
-          type="button"
-          class="app-button app-button--secondary"
-          @click="goBack"
-        >
-          {{ t('navigation.backToInvoices') }}
-        </button>
-
-        <LanguageSwitcher />
-      </div>
-
       <div v-if="isLoading" class="app-card">
         <div class="app-state">
           {{ t('invoices.loadingDetails') }}
@@ -55,6 +43,27 @@ definePageMeta({
 
       <div v-else class="app-stack">
         <section class="app-details-hero">
+          <div class="app-details-hero__toolbar">
+            <button
+              type="button"
+              class="app-button app-button--secondary"
+              @click="goBack"
+            >
+              {{ t('navigation.backToInvoices') }}
+            </button>
+
+            <div class="app-details-hero__toolbar-actions">
+              <LanguageSwitcher />
+
+              <InvoiceExportMenu
+                mode="details"
+                :invoice="invoice"
+              />
+
+              <InvoiceStatusBadge :status="invoice.status" />
+            </div>
+          </div>
+
           <div class="app-details-hero__top">
             <div>
               <p class="app-eyebrow">
@@ -66,15 +75,6 @@ definePageMeta({
               <p class="app-details-hero__meta">
                 {{ invoice.supplier_name }} · {{ t('fields.supplierTaxId') }}: {{ invoice.supplier_tax_id }}
               </p>
-            </div>
-
-            <div class="app-details-hero__actions">
-              <InvoiceStatusBadge :status="invoice.status" />
-
-              <InvoiceExportMenu
-                mode="details"
-                :invoice="invoice"
-              />
             </div>
           </div>
 

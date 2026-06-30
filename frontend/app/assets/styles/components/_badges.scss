@@ -27,3 +27,11 @@
   background: var(--color-danger-bg);
   color: var(--color-danger-text);
 }
+
+/* Final status badge alignment */
+.app-badge {
+  min-width: 7.5rem;
+  min-height: 2rem;
+  justify-content: center;
+  text-align: center;
+}
