@@ -13,10 +13,7 @@ class UpdateInvoiceStatusRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $invoice = $this->route('invoice');
-
-        return $invoice instanceof Invoice
-            && $invoice->status === InvoiceStatus::Pending;
+        return true;
     }
 
     public function rules(): array
