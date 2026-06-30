@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { toRef } from 'vue'
 import type { Invoice, InvoiceFinalStatus } from '~/types/invoice'
 
 const props = defineProps<{
@@ -16,25 +15,18 @@ const emit = defineEmits<{
   delete: []
 }>()
 
-const invoiceRef = toRef(props, 'invoice')
-
 const {
-  isEditable,
-  serverError,
-  serverValidationErrors,
-  errors,
-  isSubmitting,
+  t,
   netAmount,
-  netAmountAttrs,
   vatAmount,
-  vatAmountAttrs,
   dueDate,
-  dueDateAttrs,
   grossAmount,
-  submit,
-} = useInvoiceEditForm(invoiceRef, (updatedInvoice) => {
-  emit('updated', updatedInvoice)
-})
+  errors,
+  isLocked,
+  isUpdating,
+  updateError,
+  submitForm,
+} = useInvoiceEditForm(props, (invoice) => emit('updated', invoice))
 
 function handleStatusChange(status: InvoiceFinalStatus): void {
   emit('change-status', status)
@@ -46,136 +38,123 @@ function handleDelete(): void {
 </script>
 
 <template>
-  <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-    <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+  <form
+    class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+    @submit.prevent="submitForm"
+  >
+    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
       <div>
         <h2 class="text-lg font-semibold text-slate-950">
-          Edit invoice
+          {{ t('forms.editableFields') }}
         </h2>
         <p class="mt-1 text-sm text-slate-500">
-          Pending invoices can be edited, approved, rejected or deleted. Final invoices are locked.
+          {{ isLocked ? t('forms.pendingOnly') : t('forms.calculatedGross') }}
         </p>
       </div>
 
-      <div
-        v-if="!isEditable"
-        class="rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-600"
-      >
-        Editing is disabled for this status.
+      <InvoiceStatusSelect
+        :invoice="invoice"
+        :processing="lifecycleProcessing"
+        :show-locked-hint="true"
+        @change-status="handleStatusChange"
+      />
+    </div>
+
+    <div v-if="isLocked" class="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+      {{ t('forms.lockedInvoice') }}
+    </div>
+
+    <div v-if="updateError" class="mb-5 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+      {{ updateError }}
+    </div>
+
+    <div v-if="lifecycleError" class="mb-5 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+      {{ lifecycleError }}
+    </div>
+
+    <div class="grid gap-5 md:grid-cols-4">
+      <label class="block">
+        <span class="text-sm font-semibold text-slate-700">
+          {{ t('fields.netAmount') }}
+        </span>
+        <input
+          v-model="netAmount"
+          type="number"
+          min="0"
+          step="0.01"
+          class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+          :disabled="isLocked || isUpdating"
+        >
+        <span v-if="errors.net_amount" class="mt-1 block text-sm text-rose-600">
+          {{ errors.net_amount }}
+        </span>
+      </label>
+
+      <label class="block">
+        <span class="text-sm font-semibold text-slate-700">
+          {{ t('fields.vatAmount') }}
+        </span>
+        <input
+          v-model="vatAmount"
+          type="number"
+          min="0"
+          step="0.01"
+          class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+          :disabled="isLocked || isUpdating"
+        >
+        <span v-if="errors.vat_amount" class="mt-1 block text-sm text-rose-600">
+          {{ errors.vat_amount }}
+        </span>
+      </label>
+
+      <label class="block">
+        <span class="text-sm font-semibold text-slate-700">
+          {{ t('fields.dueDate') }}
+        </span>
+        <input
+          v-model="dueDate"
+          type="date"
+          class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+          :disabled="isLocked || isUpdating"
+        >
+        <span v-if="errors.due_date" class="mt-1 block text-sm text-rose-600">
+          {{ errors.due_date }}
+        </span>
+      </label>
+
+      <div class="rounded-xl bg-slate-50 p-4">
+        <span class="text-sm font-semibold text-slate-500">
+          {{ t('fields.grossAmount') }}
+        </span>
+        <p class="mt-2 text-xl font-bold text-slate-950">
+          {{ grossAmount }}
+        </p>
+        <p class="mt-1 text-xs text-slate-500">
+          {{ t('forms.calculatedGross') }}
+        </p>
       </div>
     </div>
 
-    <form class="space-y-5" @submit.prevent="submit">
-      <fieldset :disabled="!isEditable || isSubmitting" class="space-y-5 disabled:opacity-60">
-        <div class="grid gap-5 md:grid-cols-3">
-          <label class="block">
-            <span class="mb-1 block text-sm font-medium text-slate-700">Net amount</span>
-            <input
-              v-model="netAmount"
-              v-bind="netAmountAttrs"
-              type="number"
-              step="0.01"
-              min="0"
-              class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
-            >
-            <span v-if="errors.net_amount" class="mt-1 block text-sm text-rose-600">
-              {{ errors.net_amount }}
-            </span>
-            <span v-if="serverValidationErrors.net_amount?.[0]" class="mt-1 block text-sm text-rose-600">
-              {{ serverValidationErrors.net_amount[0] }}
-            </span>
-          </label>
+    <div class="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <button
+        v-if="showDelete"
+        type="button"
+        class="inline-flex items-center justify-center rounded-xl border border-rose-300 px-5 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+        :disabled="deleteProcessing"
+        @click="handleDelete"
+      >
+        {{ deleteProcessing ? t('app.loading') : t('invoices.deleteInvoice') }}
+      </button>
 
-          <label class="block">
-            <span class="mb-1 block text-sm font-medium text-slate-700">VAT amount</span>
-            <input
-              v-model="vatAmount"
-              v-bind="vatAmountAttrs"
-              type="number"
-              step="0.01"
-              min="0"
-              class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
-            >
-            <span v-if="errors.vat_amount" class="mt-1 block text-sm text-rose-600">
-              {{ errors.vat_amount }}
-            </span>
-            <span v-if="serverValidationErrors.vat_amount?.[0]" class="mt-1 block text-sm text-rose-600">
-              {{ serverValidationErrors.vat_amount[0] }}
-            </span>
-          </label>
+      <div v-else />
 
-          <div class="block">
-            <span class="mb-1 block text-sm font-medium text-slate-700">Gross amount</span>
-            <div class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-semibold text-slate-950">
-              {{ grossAmount }} {{ invoice.currency }}
-            </div>
-            <p class="mt-1 text-xs text-slate-500">
-              Calculated as net amount + VAT amount.
-            </p>
-            <span v-if="serverValidationErrors.gross_amount?.[0]" class="mt-1 block text-sm text-rose-600">
-              {{ serverValidationErrors.gross_amount[0] }}
-            </span>
-          </div>
-        </div>
-
-        <div class="grid gap-5 md:grid-cols-3">
-          <label class="block">
-            <span class="mb-1 block text-sm font-medium text-slate-700">Due date</span>
-            <input
-              v-model="dueDate"
-              v-bind="dueDateAttrs"
-              type="date"
-              class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
-            >
-            <span v-if="errors.due_date" class="mt-1 block text-sm text-rose-600">
-              {{ errors.due_date }}
-            </span>
-            <span v-if="serverValidationErrors.due_date?.[0]" class="mt-1 block text-sm text-rose-600">
-              {{ serverValidationErrors.due_date[0] }}
-            </span>
-          </label>
-
-          <div class="block">
-            <span class="mb-1 block text-sm font-medium text-slate-700">Status</span>
-            <InvoiceStatusSelect
-              :invoice="invoice"
-              :processing="lifecycleProcessing"
-              show-locked-hint
-              @change-status="handleStatusChange"
-            />
-          </div>
-        </div>
-      </fieldset>
-
-      <div v-if="serverError" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-        {{ serverError }}
-      </div>
-
-      <div v-if="lifecycleError" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-        {{ lifecycleError }}
-      </div>
-
-      <div class="border-t border-slate-200 pt-5">
-        <div class="flex flex-wrap items-center gap-3">
-          <button
-            type="submit"
-            class="inline-flex items-center justify-center rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
-            :disabled="!isEditable || isSubmitting"
-          >
-            {{ isSubmitting ? 'Saving...' : 'Save changes' }}
-          </button>
-
-          <button
-            v-if="showDelete"
-            type="button"
-            class="inline-flex items-center justify-center rounded-xl border border-rose-300 px-5 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50"
-            :disabled="deleteProcessing"
-            @click="handleDelete"
-          >
-            {{ deleteProcessing ? 'Deleting...' : 'Delete invoice' }}
-          </button>
-        </div>
-      </div>
-    </form>
-  </section>
+      <button
+        type="submit"
+        class="inline-flex items-center justify-center rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+        :disabled="isLocked || isUpdating"
+      >
+        {{ isUpdating ? t('forms.saving') : t('forms.saveChanges') }}
+      </button>
+    </div>
+  </form>
 </template>

@@ -62,17 +62,27 @@ export const ua = {
   },
 
   forms: {
+    invoiceInformation: 'Дані інвойсу',
+    editableFields: 'Редаговані поля',
+    financialFields: 'Фінансові поля',
+    lifecycleControls: 'Керування статусом',
     saveChanges: 'Зберегти зміни',
+    createInvoice: 'Створити інвойс',
     saving: 'Збереження...',
     creating: 'Створення...',
     calculatedGross: 'Gross amount розраховується автоматично.',
     lockedInvoice: 'Approved/rejected інвойси не можна редагувати.',
+    pendingOnly: 'Редагування доступне тільки для pending-інвойсів.',
+    requiredServerValidation: 'Поля додатково перевіряються на backend.',
   },
 
   validation: {
     required: 'Поле обов’язкове.',
     invalidNumber: 'Вкажіть коректне число.',
     invalidDate: 'Вкажіть коректну дату.',
+    invalidCurrency: 'Вкажіть валюту у форматі ISO, наприклад USD або EUR.',
+    minAmount: 'Сума не може бути від’ємною.',
+    dueDateAfterIssueDate: 'Термін оплати не може бути раніше дати виставлення.',
   },
 
   errors: {

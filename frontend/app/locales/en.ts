@@ -62,17 +62,27 @@ export const en = {
   },
 
   forms: {
+    invoiceInformation: 'Invoice information',
+    editableFields: 'Editable fields',
+    financialFields: 'Financial fields',
+    lifecycleControls: 'Lifecycle controls',
     saveChanges: 'Save changes',
+    createInvoice: 'Create invoice',
     saving: 'Saving...',
     creating: 'Creating...',
     calculatedGross: 'Gross amount is calculated automatically.',
     lockedInvoice: 'Approved/rejected invoices cannot be edited.',
+    pendingOnly: 'Editing is available only for pending invoices.',
+    requiredServerValidation: 'Fields are additionally validated on the backend.',
   },
 
   validation: {
     required: 'This field is required.',
     invalidNumber: 'Enter a valid number.',
     invalidDate: 'Enter a valid date.',
+    invalidCurrency: 'Enter currency in ISO format, for example USD or EUR.',
+    minAmount: 'Amount cannot be negative.',
+    dueDateAfterIssueDate: 'Due date cannot be earlier than issue date.',
   },
 
   errors: {
