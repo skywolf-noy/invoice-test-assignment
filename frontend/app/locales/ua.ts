@@ -1,0 +1,108 @@
+export const ua = {
+  app: {
+    name: 'Invoice Manager',
+    module: 'Модуль інвойсів',
+    loading: 'Завантаження...',
+    refresh: 'Оновити',
+    back: 'Назад',
+    actions: 'Дії',
+    cancel: 'Скасувати',
+    save: 'Зберегти',
+    delete: 'Видалити',
+    create: 'Створити',
+    edit: 'Редагувати',
+    language: 'Мова',
+    ukrainian: 'Українська',
+    english: 'Англійська',
+  },
+
+  navigation: {
+    backToInvoices: 'Назад до інвойсів',
+  },
+
+  invoices: {
+    title: 'Інвойси',
+    createTitle: 'Створити інвойс',
+    detailsTitle: 'Деталі інвойсу',
+    listTitle: 'Список інвойсів',
+    listDescription: 'Відсортовано за найновішими записами з backend.',
+    moduleDescription: 'Мінімальний full-stack модуль керування інвойсами з Laravel API та Nuxt frontend.',
+    createDescription: 'Створення нового pending-інвойсу з автоматичним розрахунком gross amount і server-side validation.',
+    noInvoices: 'Інвойсів не знайдено.',
+    loadingList: 'Завантаження інвойсів...',
+    loadingDetails: 'Завантаження інвойсу...',
+    notFound: 'Інвойс не знайдено.',
+    refreshDetails: 'Оновити деталі',
+    createInvoice: 'Створити інвойс',
+    deleteInvoice: 'Видалити інвойс',
+    deleteConfirm: 'Видалити інвойс {number}? Ця дія дозволена тільки для pending-інвойсів.',
+    finalised: 'Завершено',
+    finalisedDocument: 'Завершений документ',
+  },
+
+  fields: {
+    number: 'Номер',
+    supplier: 'Постачальник',
+    supplierName: 'Назва постачальника',
+    supplierTaxId: 'Tax ID постачальника',
+    netAmount: 'Net amount',
+    vatAmount: 'VAT amount',
+    grossAmount: 'Gross amount',
+    currency: 'Валюта',
+    status: 'Статус',
+    issueDate: 'Дата виставлення',
+    dueDate: 'Термін оплати',
+    lastUpdated: 'Останнє оновлення',
+  },
+
+  status: {
+    pending: 'Pending',
+    approved: 'Approved',
+    rejected: 'Rejected',
+  },
+
+  forms: {
+    saveChanges: 'Зберегти зміни',
+    saving: 'Збереження...',
+    creating: 'Створення...',
+    calculatedGross: 'Gross amount розраховується автоматично.',
+    lockedInvoice: 'Approved/rejected інвойси не можна редагувати.',
+  },
+
+  validation: {
+    required: 'Поле обов’язкове.',
+    invalidNumber: 'Вкажіть коректне число.',
+    invalidDate: 'Вкажіть коректну дату.',
+  },
+
+  errors: {
+    loadInvoices: 'Не вдалося завантажити інвойси.',
+    loadInvoice: 'Не вдалося завантажити інвойс.',
+    createInvoice: 'Не вдалося створити інвойс.',
+    updateInvoice: 'Не вдалося оновити інвойс.',
+    updateStatus: 'Не вдалося оновити статус інвойсу.',
+    deleteInvoice: 'Не вдалося видалити інвойс.',
+    onlyPendingStatus: 'Тільки pending-інвойси можуть змінювати статус.',
+    onlyPendingDelete: 'Тільки pending-інвойси можна видаляти.',
+  },
+
+  notifications: {
+    created: 'Інвойс створено.',
+    updated: 'Інвойс оновлено.',
+    statusUpdated: 'Статус інвойсу оновлено.',
+    deleted: 'Інвойс видалено.',
+    exported: 'Файл експортовано.',
+    failed: 'Дію не виконано.',
+  },
+
+  export: {
+    title: 'Експорт',
+    exportAsPdf: 'Експорт у PDF',
+    exportAsExcel: 'Експорт у Excel',
+    exportAsWord: 'Експорт у Word',
+    exportAsCsv: 'Експорт у CSV',
+    invoiceReport: 'Звіт по інвойсах',
+    generatedAt: 'Згенеровано',
+    totalInvoices: 'Всього інвойсів',
+  },
+} as const
