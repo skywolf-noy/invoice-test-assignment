@@ -1,5 +1,5 @@
 import { computed, onMounted, ref } from 'vue'
-import type { Invoice } from '~/types/invoice'
+import type { Invoice, InvoiceFinalStatus } from '~/types/invoice'
 
 export function useInvoiceList() {
   const { listInvoices } = useInvoicesApi()
@@ -57,13 +57,8 @@ export function useInvoiceList() {
     })
   }
 
-  async function approveInvoice(invoice: Invoice): Promise<void> {
-    const updatedInvoice = await changeStatus(invoice, 'approved')
-    replaceInvoice(updatedInvoice)
-  }
-
-  async function rejectInvoice(invoice: Invoice): Promise<void> {
-    const updatedInvoice = await changeStatus(invoice, 'rejected')
+  async function changeInvoiceStatusFromList(invoice: Invoice, status: InvoiceFinalStatus): Promise<void> {
+    const updatedInvoice = await changeStatus(invoice, status)
     replaceInvoice(updatedInvoice)
   }
 
@@ -90,8 +85,7 @@ export function useInvoiceList() {
     canChangeStatus,
     canDelete,
     isActionProcessing,
-    approveInvoice,
-    rejectInvoice,
+    changeInvoiceStatusFromList,
     deleteInvoiceFromList,
   }
 }

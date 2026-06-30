@@ -1,5 +1,5 @@
 import { computed, onMounted, ref, type Ref } from 'vue'
-import type { Invoice } from '~/types/invoice'
+import type { Invoice, InvoiceFinalStatus } from '~/types/invoice'
 
 export function useInvoiceDetails(invoiceId: Ref<number>) {
   const { showInvoice } = useInvoicesApi()
@@ -43,21 +43,12 @@ export function useInvoiceDetails(invoiceId: Ref<number>) {
     invoice.value = updatedInvoice
   }
 
-  async function approveInvoice(): Promise<void> {
+  async function changeCurrentInvoiceStatus(status: InvoiceFinalStatus): Promise<void> {
     if (!invoice.value) {
       return
     }
 
-    const updatedInvoice = await changeStatus(invoice.value, 'approved')
-    setInvoice(updatedInvoice)
-  }
-
-  async function rejectInvoice(): Promise<void> {
-    if (!invoice.value) {
-      return
-    }
-
-    const updatedInvoice = await changeStatus(invoice.value, 'rejected')
+    const updatedInvoice = await changeStatus(invoice.value, status)
     setInvoice(updatedInvoice)
   }
 
@@ -86,8 +77,7 @@ export function useInvoiceDetails(invoiceId: Ref<number>) {
     canChangeStatus,
     canDelete,
     isActionProcessing,
-    approveInvoice,
-    rejectInvoice,
+    changeCurrentInvoiceStatus,
     deleteCurrentInvoice,
   }
 }

@@ -7,11 +7,9 @@ const {
   refreshInvoices,
   openInvoice,
   openCreateInvoice,
-  canChangeStatus,
   canDelete,
   isActionProcessing,
-  approveInvoice,
-  rejectInvoice,
+  changeInvoiceStatusFromList,
   deleteInvoiceFromList,
 } = useInvoiceList()
 
@@ -102,7 +100,7 @@ const {
                   Due date
                 </th>
                 <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Actions
+                  Lifecycle
                 </th>
               </tr>
             </thead>
@@ -133,24 +131,12 @@ const {
                   {{ formatDate(invoice.due_date) }}
                 </td>
                 <td class="whitespace-nowrap px-5 py-4" @click.stop @keydown.stop>
-                  <div v-if="canChangeStatus(invoice)" class="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      class="rounded-lg border border-emerald-300 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50 disabled:opacity-50"
-                      :disabled="isActionProcessing(invoice.id)"
-                      @click="approveInvoice(invoice)"
-                    >
-                      {{ isActionProcessing(invoice.id, 'approve') ? 'Approving...' : 'Approve' }}
-                    </button>
-
-                    <button
-                      type="button"
-                      class="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-50 disabled:opacity-50"
-                      :disabled="isActionProcessing(invoice.id)"
-                      @click="rejectInvoice(invoice)"
-                    >
-                      {{ isActionProcessing(invoice.id, 'reject') ? 'Rejecting...' : 'Reject' }}
-                    </button>
+                  <div class="flex flex-wrap items-start gap-2">
+                    <InvoiceStatusSelect
+                      :invoice="invoice"
+                      :processing="isActionProcessing(invoice.id)"
+                      @change-status="changeInvoiceStatusFromList(invoice, $event)"
+                    />
 
                     <button
                       v-if="canDelete(invoice)"
@@ -162,10 +148,6 @@ const {
                       {{ isActionProcessing(invoice.id, 'delete') ? 'Deleting...' : 'Delete' }}
                     </button>
                   </div>
-
-                  <span v-else class="text-xs font-medium text-slate-400">
-                    Locked
-                  </span>
                 </td>
               </tr>
             </tbody>
