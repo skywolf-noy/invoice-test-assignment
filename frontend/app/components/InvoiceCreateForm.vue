@@ -83,13 +83,13 @@ const {
       <div class="app-form__group app-form__group--three">
         <label class="app-field">
           <span class="app-field__label">{{ t('fields.netAmount') }}</span>
-          <input v-model="netAmount" type="number" min="0" step="0.01" class="app-field__control">
+          <input v-model="netAmount" type="text" inputmode="decimal" min="0" step="0.01" class="app-field__control">
           <span v-if="errors.net_amount" class="app-field__error">{{ errors.net_amount }}</span>
         </label>
 
         <label class="app-field">
           <span class="app-field__label">{{ t('fields.vatAmount') }}</span>
-          <input v-model="vatAmount" type="number" min="0" step="0.01" class="app-field__control">
+          <input v-model="vatAmount" type="text" inputmode="decimal" min="0" step="0.01" class="app-field__control">
           <span v-if="errors.vat_amount" class="app-field__error">{{ errors.vat_amount }}</span>
         </label>
 

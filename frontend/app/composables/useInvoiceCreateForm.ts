@@ -3,8 +3,8 @@ import { useField, useForm } from 'vee-validate'
 import { computed } from 'vue'
 import { z } from 'zod'
 import { useAppI18n } from '~/composables/useAppI18n'
-import { useNotifications } from '~/composables/useNotifications'
 import { useInvoiceMutationsStore } from '~/stores/invoiceMutations'
+import { useNotificationsStore } from '~/stores/notifications'
 import type { Invoice } from '~/types/invoice'
 
 type CreateInvoiceFormSubmitHandler = (invoice: Invoice) => void
@@ -22,7 +22,7 @@ function normalizeNumberInput(value: unknown): string {
     return ''
   }
 
-  return String(value).replace(',', '.')
+  return String(value).replace(',', '.').trim()
 }
 
 function normalizeTextInput(value: unknown): string {
@@ -31,6 +31,10 @@ function normalizeTextInput(value: unknown): string {
   }
 
   return String(value).trim()
+}
+
+function normalizeTaxId(value: unknown): string {
+  return normalizeTextInput(value).toUpperCase()
 }
 
 function isValidAmount(value: string): boolean {
@@ -72,17 +76,28 @@ function generateInvoiceNumber(): string {
   return `INV-${randomPart}`
 }
 
+function getServerErrorMessage(error: unknown, fallbackMessage: string): string {
+  const responseData = (error as {
+    data?: {
+      message?: string
+      errors?: Record<string, string[]>
+    }
+  })?.data
+
+  const firstValidationMessage = responseData?.errors
+    ? Object.values(responseData.errors).flat()[0]
+    : undefined
+
+  return firstValidationMessage || responseData?.message || fallbackMessage
+}
+
 export function useInvoiceCreateForm(onCreated: CreateInvoiceFormSubmitHandler) {
   const {
     t,
   } = useAppI18n()
 
   const invoiceMutationsStore = useInvoiceMutationsStore()
-
-  const {
-    showSuccess,
-    showError,
-  } = useNotifications()
+  const notificationsStore = useNotificationsStore()
 
   const validationSchema = toTypedSchema(
     z.object({
@@ -95,7 +110,7 @@ export function useInvoiceCreateForm(onCreated: CreateInvoiceFormSubmitHandler) 
         z.string().min(1, t('validation.required')),
       ),
       supplier_tax_id: z.preprocess(
-        normalizeTextInput,
+        normalizeTaxId,
         z.string().min(1, t('validation.required')),
       ),
       net_amount: z.preprocess(
@@ -180,9 +195,9 @@ export function useInvoiceCreateForm(onCreated: CreateInvoiceFormSubmitHandler) 
   const submitForm = handleSubmit(async (values) => {
     try {
       const invoice = await invoiceMutationsStore.createInvoice({
-        number: values.number,
-        supplier_name: values.supplier_name,
-        supplier_tax_id: values.supplier_tax_id,
+        number: normalizeTextInput(values.number),
+        supplier_name: normalizeTextInput(values.supplier_name),
+        supplier_tax_id: normalizeTaxId(values.supplier_tax_id),
         net_amount: formatAmount(values.net_amount),
         vat_amount: formatAmount(values.vat_amount),
         gross_amount: grossAmount.value,
@@ -191,11 +206,18 @@ export function useInvoiceCreateForm(onCreated: CreateInvoiceFormSubmitHandler) 
         due_date: values.due_date,
       })
 
-      showSuccess(t('notifications.created'))
+      notificationsStore.push({
+        type: 'success',
+        message: t('notifications.created'),
+      })
+
       resetForm()
       onCreated(invoice)
-    } catch {
-      showError(t('errors.createInvoice'))
+    } catch (error) {
+      notificationsStore.push({
+        type: 'error',
+        message: getServerErrorMessage(error, t('errors.createInvoice')),
+      })
     }
   })
 
