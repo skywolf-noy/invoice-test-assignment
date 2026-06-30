@@ -443,3 +443,28 @@
     min-width: 38rem;
   }
 }
+
+/* Details title/status alignment */
+.app-details-hero__top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.app-details-hero__status {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+@media (min-width: 768px) {
+  .app-details-hero__top {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .app-details-hero__status {
+    justify-content: flex-end;
+    padding-top: 0.35rem;
+  }
+}

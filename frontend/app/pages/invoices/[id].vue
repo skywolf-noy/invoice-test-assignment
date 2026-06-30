@@ -59,8 +59,6 @@ definePageMeta({
                 mode="details"
                 :invoice="invoice"
               />
-
-              <InvoiceStatusBadge :status="invoice.status" />
             </div>
           </div>
 
@@ -75,6 +73,10 @@ definePageMeta({
               <p class="app-details-hero__meta">
                 {{ invoice.supplier_name }} · {{ t('fields.supplierTaxId') }}: {{ invoice.supplier_tax_id }}
               </p>
+            </div>
+
+            <div class="app-details-hero__status">
+              <InvoiceStatusBadge :status="invoice.status" />
             </div>
           </div>
 
