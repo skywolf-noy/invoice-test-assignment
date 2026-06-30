@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import type { Invoice, InvoiceFinalStatus } from '~/types/invoice'
 
 const props = defineProps<{
@@ -12,18 +11,10 @@ const emit = defineEmits<{
   'change-status': [status: InvoiceFinalStatus]
 }>()
 
-const isLocked = computed(() => props.invoice.status !== 'pending')
-
-function handleChange(event: Event): void {
-  const target = event.target as HTMLSelectElement
-  const selectedStatus = target.value
-
-  if (selectedStatus !== 'approved' && selectedStatus !== 'rejected') {
-    return
-  }
-
-  emit('change-status', selectedStatus)
-}
+const {
+  isLocked,
+  handleChange,
+} = useInvoiceStatusSelect(props, emit)
 </script>
 
 <template>

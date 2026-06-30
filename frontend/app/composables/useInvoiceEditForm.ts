@@ -2,7 +2,7 @@ import { computed, ref, watch, type Ref } from 'vue'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import { z } from 'zod'
-import { useInvoicesStore } from '~/stores/invoices'
+import { useInvoiceMutationsStore } from '~/stores/invoiceMutations'
 import type { ApiErrorResponse, Invoice } from '~/types/invoice'
 
 interface InvoiceEditFormValues {
@@ -15,7 +15,7 @@ export function useInvoiceEditForm(
   invoice: Ref<Invoice>,
   onUpdated: (invoice: Invoice) => void,
 ) {
-  const invoicesStore = useInvoicesStore()
+  const invoiceMutationsStore = useInvoiceMutationsStore()
 
   const isEditable = computed(() => invoice.value.status === 'pending')
   const serverError = ref('')
@@ -88,7 +88,7 @@ export function useInvoiceEditForm(
     serverValidationErrors.value = {}
 
     try {
-      const updatedInvoice = await invoicesStore.updateInvoice(invoice.value.id, {
+      const updatedInvoice = await invoiceMutationsStore.updateInvoice(invoice.value.id, {
         net_amount: values.net_amount,
         vat_amount: values.vat_amount,
         gross_amount: grossAmount.value,
@@ -99,7 +99,7 @@ export function useInvoiceEditForm(
     } catch (error) {
       const apiError = error as { data?: ApiErrorResponse }
 
-      serverError.value = apiError.data?.message || invoicesStore.updateError || 'Failed to update invoice.'
+      serverError.value = apiError.data?.message || invoiceMutationsStore.updateError || 'Failed to update invoice.'
       serverValidationErrors.value = apiError.data?.errors || {}
     }
   })

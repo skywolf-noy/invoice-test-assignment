@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 import { useInvoicesApi } from '~/composables/useInvoices'
+import { useInvoiceDetailsStore } from '~/stores/invoiceDetails'
+import { useInvoiceListStore } from '~/stores/invoiceList'
 import type {
   ApiErrorResponse,
   CreateInvoicePayload,
@@ -16,18 +18,11 @@ function getApiMessage(error: unknown, fallback: string): string {
   return apiError.data?.message || fallback
 }
 
-export const useInvoicesStore = defineStore('invoices', {
+export const useInvoiceMutationsStore = defineStore('invoiceMutations', {
   state: () => ({
-    invoices: [] as Invoice[],
-    currentInvoice: null as Invoice | null,
-
-    isListLoading: true,
-    isDetailsLoading: true,
     isCreating: false,
     isUpdating: false,
 
-    listError: '',
-    detailsError: '',
     createError: '',
     updateError: '',
     actionError: '',
@@ -57,76 +52,21 @@ export const useInvoicesStore = defineStore('invoices', {
   },
 
   actions: {
-    resetErrors(): void {
-      this.listError = ''
-      this.detailsError = ''
-      this.createError = ''
-      this.updateError = ''
-      this.actionError = ''
-    },
+    syncInvoice(invoice: Invoice): void {
+      const listStore = useInvoiceListStore()
+      const detailsStore = useInvoiceDetailsStore()
 
-    replaceInvoice(updatedInvoice: Invoice): void {
-      this.invoices = this.invoices.map((invoice) => {
-        if (invoice.id === updatedInvoice.id) {
-          return updatedInvoice
-        }
+      listStore.replaceInvoice(invoice)
 
-        return invoice
-      })
-
-      if (this.currentInvoice?.id === updatedInvoice.id) {
-        this.currentInvoice = updatedInvoice
-      }
-    },
-
-    prependInvoice(invoice: Invoice): void {
-      this.invoices = [
-        invoice,
-        ...this.invoices.filter((item) => item.id !== invoice.id),
-      ]
-    },
-
-    removeInvoiceFromState(invoiceId: number): void {
-      this.invoices = this.invoices.filter((invoice) => invoice.id !== invoiceId)
-
-      if (this.currentInvoice?.id === invoiceId) {
-        this.currentInvoice = null
-      }
-    },
-
-    async fetchInvoices(): Promise<void> {
-      const { listInvoices } = useInvoicesApi()
-
-      this.isListLoading = true
-      this.listError = ''
-
-      try {
-        this.invoices = await listInvoices()
-      } catch (error) {
-        this.listError = getApiMessage(error, 'Failed to load invoices.')
-      } finally {
-        this.isListLoading = false
-      }
-    },
-
-    async fetchInvoice(id: number): Promise<void> {
-      const { showInvoice } = useInvoicesApi()
-
-      this.isDetailsLoading = true
-      this.detailsError = ''
-      this.currentInvoice = null
-
-      try {
-        this.currentInvoice = await showInvoice(id)
-      } catch (error) {
-        this.detailsError = getApiMessage(error, 'Failed to load invoice.')
-      } finally {
-        this.isDetailsLoading = false
+      if (detailsStore.currentInvoice?.id === invoice.id) {
+        detailsStore.setInvoice(invoice)
       }
     },
 
     async createInvoice(payload: CreateInvoicePayload): Promise<Invoice> {
       const { createInvoice } = useInvoicesApi()
+      const listStore = useInvoiceListStore()
+      const detailsStore = useInvoiceDetailsStore()
 
       this.isCreating = true
       this.createError = ''
@@ -134,8 +74,8 @@ export const useInvoicesStore = defineStore('invoices', {
       try {
         const createdInvoice = await createInvoice(payload)
 
-        this.prependInvoice(createdInvoice)
-        this.currentInvoice = createdInvoice
+        listStore.prependInvoice(createdInvoice)
+        detailsStore.setInvoice(createdInvoice)
 
         return createdInvoice
       } catch (error) {
@@ -155,7 +95,7 @@ export const useInvoicesStore = defineStore('invoices', {
       try {
         const updatedInvoice = await updateInvoice(id, payload)
 
-        this.replaceInvoice(updatedInvoice)
+        this.syncInvoice(updatedInvoice)
 
         return updatedInvoice
       } catch (error) {
@@ -181,7 +121,7 @@ export const useInvoicesStore = defineStore('invoices', {
       try {
         const updatedInvoice = await updateInvoiceStatus(invoice.id, { status })
 
-        this.replaceInvoice(updatedInvoice)
+        this.syncInvoice(updatedInvoice)
 
         return updatedInvoice
       } catch (error) {
@@ -195,6 +135,8 @@ export const useInvoicesStore = defineStore('invoices', {
 
     async deleteInvoice(invoice: Invoice): Promise<void> {
       const { deleteInvoice } = useInvoicesApi()
+      const listStore = useInvoiceListStore()
+      const detailsStore = useInvoiceDetailsStore()
 
       if (!this.canDelete(invoice)) {
         this.actionError = 'Only pending invoices can be deleted.'
@@ -207,7 +149,9 @@ export const useInvoicesStore = defineStore('invoices', {
 
       try {
         await deleteInvoice(invoice.id)
-        this.removeInvoiceFromState(invoice.id)
+
+        listStore.removeInvoiceById(invoice.id)
+        detailsStore.clearInvoice(invoice.id)
       } catch (error) {
         this.actionError = getApiMessage(error, 'Failed to delete invoice.')
         throw error

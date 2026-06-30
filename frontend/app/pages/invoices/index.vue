@@ -1,51 +1,20 @@
 <script setup lang="ts">
-import { storeToRefs } from 'pinia'
-import { useInvoicesStore } from '~/stores/invoices'
-import type { Invoice, InvoiceFinalStatus } from '~/types/invoice'
-
-const invoicesStore = useInvoicesStore()
-
 const {
   invoices,
-  isListLoading,
-  listError,
+  isLoading,
+  error,
   actionError,
-} = storeToRefs(invoicesStore)
-
-const {
   formatMoney,
   formatDate,
-} = useInvoiceFormatters()
-
-onMounted(() => {
-  void invoicesStore.fetchInvoices()
-})
-
-function refreshInvoices(): void {
-  void invoicesStore.fetchInvoices()
-}
-
-function openInvoice(invoice: Invoice): void {
-  void navigateTo(`/invoices/${invoice.id}`)
-}
-
-function openCreateInvoice(): void {
-  void navigateTo('/invoices/create')
-}
-
-function changeInvoiceStatusFromList(invoice: Invoice, status: InvoiceFinalStatus): void {
-  void invoicesStore.changeInvoiceStatus(invoice, status)
-}
-
-function deleteInvoiceFromList(invoice: Invoice): void {
-  const confirmed = window.confirm(`Delete invoice ${invoice.number}? This action is allowed only for pending invoices.`)
-
-  if (!confirmed) {
-    return
-  }
-
-  void invoicesStore.deleteInvoice(invoice)
-}
+  refreshInvoices,
+  openInvoice,
+  openCreateInvoice,
+  canChangeStatus,
+  canDelete,
+  isActionProcessing,
+  changeInvoiceStatus,
+  deleteInvoice,
+} = useInvoicesPage()
 </script>
 
 <template>
@@ -97,12 +66,12 @@ function deleteInvoiceFromList(invoice: Invoice): void {
           {{ actionError }}
         </div>
 
-        <div v-if="isListLoading" class="p-6 text-slate-500">
+        <div v-if="isLoading" class="p-6 text-slate-500">
           Loading invoices...
         </div>
 
-        <div v-else-if="listError" class="m-5 rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-700">
-          {{ listError }}
+        <div v-else-if="error" class="m-5 rounded-xl border border-rose-200 bg-rose-50 p-4 text-rose-700">
+          {{ error }}
         </div>
 
         <div v-else-if="!invoices.length" class="p-6 text-slate-500">
@@ -165,21 +134,21 @@ function deleteInvoiceFromList(invoice: Invoice): void {
                 </td>
 
                 <td class="whitespace-nowrap px-5 py-4" @click.stop @keydown.stop>
-                  <div v-if="invoicesStore.canChangeStatus(invoice)" class="flex items-center gap-2">
+                  <div v-if="canChangeStatus(invoice)" class="flex items-center gap-2">
                     <InvoiceStatusSelect
                       :invoice="invoice"
-                      :processing="invoicesStore.isActionProcessing(invoice.id)"
-                      @change-status="changeInvoiceStatusFromList(invoice, $event)"
+                      :processing="isActionProcessing(invoice.id)"
+                      @change-status="changeInvoiceStatus(invoice, $event)"
                     />
 
                     <button
-                      v-if="invoicesStore.canDelete(invoice)"
+                      v-if="canDelete(invoice)"
                       type="button"
                       class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-rose-300 text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
-                      :disabled="invoicesStore.isActionProcessing(invoice.id)"
+                      :disabled="isActionProcessing(invoice.id)"
                       title="Delete invoice"
                       aria-label="Delete invoice"
-                      @click="deleteInvoiceFromList(invoice)"
+                      @click="deleteInvoice(invoice)"
                     >
                       <svg
                         class="h-4 w-4"

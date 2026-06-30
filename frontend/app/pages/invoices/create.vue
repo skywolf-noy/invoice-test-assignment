@@ -1,13 +1,8 @@
 <script setup lang="ts">
-import type { Invoice } from '~/types/invoice'
-
-function goBack(): void {
-  void navigateTo('/invoices')
-}
-
-function handleCreated(invoice: Invoice): void {
-  void navigateTo(`/invoices/${invoice.id}`)
-}
+const {
+  goBack,
+  handleCreated,
+} = useInvoiceCreatePage()
 </script>
 
 <template>
