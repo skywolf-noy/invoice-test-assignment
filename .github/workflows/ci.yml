@@ -55,7 +55,7 @@ jobs:
         run: docker compose exec -T backend php artisan test
 
       - name: Install frontend dependencies
-        run: docker compose exec -T frontend npm ci
+        run: docker compose exec -T frontend npm install
 
       - name: Run frontend tests
         run: docker compose exec -T frontend npm run test
