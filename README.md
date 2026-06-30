@@ -91,7 +91,7 @@ Components isolate reusable UI pieces.
 Composables keep API calls, page state, form state, validation and submit logic out of UI components.
 Types keep frontend/backend data contracts explicit.
 
-The frontend uses composition functions instead of Pinia because invoice list, details, create form and edit form state are local to this module and do not require a global store.
+The frontend uses Pinia as the source of truth for invoice list state, current invoice state, loading/error flags and lifecycle actions. Composables are kept for API access, formatting helpers and vee-validate/zod form logic.
 
 ## Business Rules
 
@@ -158,6 +158,36 @@ gross_amount is calculated on the frontend for UX, but validated and recalculate
 - Add role-based access control
 - Add better production Docker setup with PHP-FPM and web server
 
+<!-- frontend-state-start -->
+## Frontend State Management
+
+Pinia is used as the main state layer for the invoice module.
+
+Main store:
+
+- `frontend/app/stores/invoices.ts`
+
+The store owns:
+
+- invoice list state
+- current invoice details state
+- loading flags
+- API error messages
+- create/update actions
+- status transition actions
+- delete action
+- local synchronization between the list and current invoice after updates
+
+Composables are still used, but only for focused responsibilities:
+
+- `useInvoices.ts` - API client wrapper
+- `useInvoiceCreateForm.ts` - create form validation and submit orchestration
+- `useInvoiceEditForm.ts` - edit form validation and submit orchestration
+- `useInvoiceFormatters.ts` - date and money formatting
+
+This keeps UI components cleaner and avoids spreading state mutation logic across pages and components.
+<!-- frontend-state-end -->
+
 <!-- invoice-lifecycle-start -->
 ## Invoice lifecycle rules
 
@@ -181,5 +211,5 @@ Both lifecycle actions are validated on the backend and reflected in the fronten
 
 ### Frontend architecture note
 
-The frontend uses composables instead of Pinia for this assignment because invoice list state, details state, creation form state, edit form state and lifecycle action state are local to the invoice module. This keeps components mostly presentational without introducing unnecessary global state.
+The frontend uses Pinia as the source of truth for invoice list state, current invoice state, loading/error flags and lifecycle actions. Composables are kept for API access, formatting helpers and vee-validate/zod form logic. This keeps pages and components mostly presentational while centralizing shared invoice state.
 <!-- invoice-lifecycle-end -->
