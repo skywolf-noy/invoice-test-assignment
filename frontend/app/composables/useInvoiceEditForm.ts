@@ -49,6 +49,11 @@ export function useInvoiceEditForm(
     t,
   } = useAppI18n()
 
+  const {
+    notifySuccess,
+    notifyError,
+  } = useNotifications()
+
   const isLocked = computed(() => props.invoice.status !== 'pending')
 
   const validationSchema = toTypedSchema(
@@ -123,14 +128,19 @@ export function useInvoiceEditForm(
       return
     }
 
-    const updatedInvoice = await invoiceMutationsStore.updateInvoice(props.invoice.id, {
-      net_amount: Number(formValues.net_amount).toFixed(2),
-      vat_amount: Number(formValues.vat_amount).toFixed(2),
-      gross_amount: grossAmount.value,
-      due_date: formValues.due_date,
-    })
+    try {
+      const updatedInvoice = await invoiceMutationsStore.updateInvoice(props.invoice.id, {
+        net_amount: Number(formValues.net_amount).toFixed(2),
+        vat_amount: Number(formValues.vat_amount).toFixed(2),
+        gross_amount: grossAmount.value,
+        due_date: formValues.due_date,
+      })
 
-    onUpdated(updatedInvoice)
+      notifySuccess('notifications.updated')
+      onUpdated(updatedInvoice)
+    } catch {
+      notifyError('notifications.failed')
+    }
   })
 
   return {

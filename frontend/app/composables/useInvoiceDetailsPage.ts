@@ -31,6 +31,11 @@ export function useInvoiceDetailsPage() {
     t,
   } = useAppI18n()
 
+  const {
+    notifySuccess,
+    notifyError,
+  } = useNotifications()
+
   onMounted(() => {
     void detailsStore.fetchInvoice(invoiceId.value)
   })
@@ -56,7 +61,10 @@ export function useInvoiceDetailsPage() {
       return
     }
 
-    void mutationsStore.changeInvoiceStatus(invoice.value, status)
+    void mutationsStore
+      .changeInvoiceStatus(invoice.value, status)
+      .then(() => notifySuccess('notifications.statusUpdated'))
+      .catch(() => notifyError('notifications.failed'))
   }
 
   function deleteInvoice(): void {
@@ -72,9 +80,13 @@ export function useInvoiceDetailsPage() {
       return
     }
 
-    void mutationsStore.deleteInvoice(invoice.value).then(() => {
-      void navigateTo('/invoices')
-    })
+    void mutationsStore
+      .deleteInvoice(invoice.value)
+      .then(() => {
+        notifySuccess('notifications.deleted')
+        void navigateTo('/invoices')
+      })
+      .catch(() => notifyError('notifications.failed'))
   }
 
   return {

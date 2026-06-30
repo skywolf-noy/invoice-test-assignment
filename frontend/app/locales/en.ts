@@ -12,6 +12,7 @@ export const en = {
     create: 'Create',
     edit: 'Edit',
     language: 'Language',
+    close: 'Close',
     ukrainian: 'Ukrainian',
     english: 'English',
   },

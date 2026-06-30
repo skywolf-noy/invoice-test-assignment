@@ -27,6 +27,11 @@ export function useInvoicesPage() {
     t,
   } = useAppI18n()
 
+  const {
+    notifySuccess,
+    notifyError,
+  } = useNotifications()
+
   onMounted(() => {
     void listStore.fetchInvoices()
   })
@@ -44,7 +49,10 @@ export function useInvoicesPage() {
   }
 
   function changeInvoiceStatus(invoice: Invoice, status: InvoiceFinalStatus): void {
-    void mutationsStore.changeInvoiceStatus(invoice, status)
+    void mutationsStore
+      .changeInvoiceStatus(invoice, status)
+      .then(() => notifySuccess('notifications.statusUpdated'))
+      .catch(() => notifyError('notifications.failed'))
   }
 
   function deleteInvoice(invoice: Invoice): void {
@@ -56,7 +64,10 @@ export function useInvoicesPage() {
       return
     }
 
-    void mutationsStore.deleteInvoice(invoice)
+    void mutationsStore
+      .deleteInvoice(invoice)
+      .then(() => notifySuccess('notifications.deleted'))
+      .catch(() => notifyError('notifications.failed'))
   }
 
   return {

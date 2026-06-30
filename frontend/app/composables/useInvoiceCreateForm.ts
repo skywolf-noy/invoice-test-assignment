@@ -47,6 +47,11 @@ export function useInvoiceCreateForm(onCreated: (invoice: Invoice) => void) {
     t,
   } = useAppI18n()
 
+  const {
+    notifySuccess,
+    notifyError,
+  } = useNotifications()
+
   const validationSchema = toTypedSchema(
     z.object({
       number: z.string().trim().min(1, t('validation.required')),
@@ -131,19 +136,24 @@ export function useInvoiceCreateForm(onCreated: (invoice: Invoice) => void) {
   })
 
   const submitForm = handleSubmit(async (formValues) => {
-    const createdInvoice = await invoiceMutationsStore.createInvoice({
-      number: formValues.number.trim(),
-      supplier_name: formValues.supplier_name.trim(),
-      supplier_tax_id: formValues.supplier_tax_id.trim(),
-      net_amount: Number(formValues.net_amount).toFixed(2),
-      vat_amount: Number(formValues.vat_amount).toFixed(2),
-      gross_amount: grossAmount.value,
-      currency: normalizeCurrency(formValues.currency),
-      issue_date: formValues.issue_date,
-      due_date: formValues.due_date,
-    })
+    try {
+      const createdInvoice = await invoiceMutationsStore.createInvoice({
+        number: formValues.number.trim(),
+        supplier_name: formValues.supplier_name.trim(),
+        supplier_tax_id: formValues.supplier_tax_id.trim(),
+        net_amount: Number(formValues.net_amount).toFixed(2),
+        vat_amount: Number(formValues.vat_amount).toFixed(2),
+        gross_amount: grossAmount.value,
+        currency: normalizeCurrency(formValues.currency),
+        issue_date: formValues.issue_date,
+        due_date: formValues.due_date,
+      })
 
-    onCreated(createdInvoice)
+      notifySuccess('notifications.created')
+      onCreated(createdInvoice)
+    } catch {
+      notifyError('notifications.failed')
+    }
   })
 
   return {

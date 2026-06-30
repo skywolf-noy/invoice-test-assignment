@@ -12,6 +12,7 @@ export const ua = {
     create: 'Створити',
     edit: 'Редагувати',
     language: 'Мова',
+    close: 'Закрити',
     ukrainian: 'Українська',
     english: 'Англійська',
   },

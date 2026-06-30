@@ -1,5 +1,5 @@
 import { storeToRefs } from 'pinia'
-import { computed, onMounted } from 'vue'
+import { computed, getCurrentInstance, onMounted } from 'vue'
 import { DEFAULT_LOCALE, locales, type LocaleCode } from '~/locales'
 import { useLocaleStore } from '~/stores/locale'
 
@@ -32,9 +32,13 @@ export function useAppI18n() {
     locale,
   } = storeToRefs(localeStore)
 
-  onMounted(() => {
+  if (getCurrentInstance()) {
+    onMounted(() => {
+      localeStore.hydrate()
+    })
+  } else {
     localeStore.hydrate()
-  })
+  }
 
   const availableLocales = computed(() => localeStore.availableLocales)
   const currentLocaleLabel = computed(() => localeStore.localeLabel)
