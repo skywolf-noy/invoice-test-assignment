@@ -24,9 +24,22 @@ export function useInvoiceFormatters() {
     }).format(new Date(date))
   }
 
+  function getTodayDate(): string {
+    return new Date().toISOString().slice(0, 10)
+  }
+
+  function getDateAfterDays(days: number): string {
+    const date = new Date()
+    date.setDate(date.getDate() + days)
+
+    return date.toISOString().slice(0, 10)
+  }
+
   return {
     formatMoney,
     formatDate,
     formatDateTime,
+    getTodayDate,
+    getDateAfterDays,
   }
 }

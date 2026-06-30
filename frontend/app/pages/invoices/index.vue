@@ -5,6 +5,7 @@ const {
   error,
   refreshInvoices,
   openInvoice,
+  openCreateInvoice,
 } = useInvoiceList()
 
 const {
@@ -16,16 +17,26 @@ const {
 <template>
   <main class="min-h-screen bg-slate-50 px-4 py-8 text-slate-950 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-6xl">
-      <header class="mb-8">
-        <p class="text-sm font-semibold uppercase tracking-wide text-slate-500">
-          Invoice module
-        </p>
-        <h1 class="mt-2 text-3xl font-bold tracking-tight">
-          Invoices
-        </h1>
-        <p class="mt-2 max-w-2xl text-slate-600">
-          Minimal full-stack invoice management module with Laravel API and Nuxt frontend.
-        </p>
+      <header class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-wide text-slate-500">
+            Invoice module
+          </p>
+          <h1 class="mt-2 text-3xl font-bold tracking-tight">
+            Invoices
+          </h1>
+          <p class="mt-2 max-w-2xl text-slate-600">
+            Minimal full-stack invoice management module with Laravel API and Nuxt frontend.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="inline-flex items-center justify-center rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+          @click="openCreateInvoice"
+        >
+          Create invoice
+        </button>
       </header>
 
       <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">

@@ -30,6 +30,18 @@ export interface ApiErrorResponse {
   errors?: Record<string, string[]>
 }
 
+export interface CreateInvoicePayload {
+  number: string
+  supplier_name: string
+  supplier_tax_id: string
+  net_amount: number
+  vat_amount: number
+  gross_amount: string
+  currency: string
+  issue_date: string
+  due_date: string
+}
+
 export interface UpdateInvoicePayload {
   net_amount: number
   vat_amount: number

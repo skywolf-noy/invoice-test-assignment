@@ -34,11 +34,16 @@ export function useInvoiceList() {
     void navigateTo(`/invoices/${invoice.id}`)
   }
 
+  function openCreateInvoice(): void {
+    void navigateTo('/invoices/create')
+  }
+
   return {
     invoices,
     isLoading,
     error,
     refreshInvoices,
     openInvoice,
+    openCreateInvoice,
   }
 }

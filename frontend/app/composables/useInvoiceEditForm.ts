@@ -4,7 +4,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { z } from 'zod'
 import type { ApiErrorResponse, Invoice } from '~/types/invoice'
 
-interface InvoiceFormValues {
+interface InvoiceEditFormValues {
   net_amount: number
   vat_amount: number
   due_date: string
@@ -46,7 +46,7 @@ export function useInvoiceEditForm(
     handleSubmit,
     isSubmitting,
     setValues,
-  } = useForm<InvoiceFormValues>({
+  } = useForm<InvoiceEditFormValues>({
     validationSchema,
     initialValues: {
       net_amount: Number(invoice.value.net_amount),

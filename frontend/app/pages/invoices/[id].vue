@@ -2,7 +2,6 @@
 import type { Invoice } from '~/types/invoice'
 
 const route = useRoute()
-const router = useRouter()
 const invoiceId = computed(() => Number(route.params.id))
 
 const {
@@ -20,7 +19,7 @@ const {
 } = useInvoiceFormatters()
 
 function goBack(): void {
-  void router.push('/invoices')
+  void navigateTo('/invoices')
 }
 
 function handleUpdated(updatedInvoice: Invoice): void {

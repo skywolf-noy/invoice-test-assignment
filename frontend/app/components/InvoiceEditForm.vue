@@ -98,6 +98,9 @@ const {
             <p class="mt-1 text-xs text-slate-500">
               Calculated as net amount + VAT amount.
             </p>
+            <span v-if="serverValidationErrors.gross_amount?.[0]" class="mt-1 block text-sm text-rose-600">
+              {{ serverValidationErrors.gross_amount[0] }}
+            </span>
           </div>
         </div>
 

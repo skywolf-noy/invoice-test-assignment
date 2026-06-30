@@ -1,6 +1,7 @@
 import type {
   ApiCollectionResponse,
   ApiSingleResponse,
+  CreateInvoicePayload,
   Invoice,
   UpdateInvoicePayload,
 } from '~/types/invoice'
@@ -26,6 +27,15 @@ export function useInvoicesApi() {
     return response.data
   }
 
+  async function createInvoice(payload: CreateInvoicePayload): Promise<Invoice> {
+    const response = await $fetch<ApiSingleResponse<Invoice>>(`${apiBaseUrl}/invoices`, {
+      method: 'POST',
+      body: payload,
+    })
+
+    return response.data
+  }
+
   async function updateInvoice(id: number, payload: UpdateInvoicePayload): Promise<Invoice> {
     const response = await $fetch<ApiSingleResponse<Invoice>>(`${apiBaseUrl}/invoices/${id}`, {
       method: 'PUT',
@@ -38,6 +48,7 @@ export function useInvoicesApi() {
   return {
     listInvoices,
     showInvoice,
+    createInvoice,
     updateInvoice,
   }
 }

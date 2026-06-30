@@ -73,16 +73,25 @@ InvoiceResource controls the JSON response shape.
 Frontend code is split into:
 
 - pages/invoices/index.vue - invoice list page
+- pages/invoices/create.vue - invoice creation page
 - pages/invoices/[id].vue - invoice details page
-- components/InvoiceEditForm.vue - edit form
+- components/InvoiceCreateForm.vue - create form UI
+- components/InvoiceEditForm.vue - edit form UI
 - components/InvoiceStatusBadge.vue - visual status badge
 - composables/useInvoices.ts - API client logic
+- composables/useInvoiceList.ts - invoice list state and actions
+- composables/useInvoiceDetails.ts - invoice details state and actions
+- composables/useInvoiceCreateForm.ts - create form state, validation and submit logic
+- composables/useInvoiceEditForm.ts - edit form state, validation and submit logic
+- composables/useInvoiceFormatters.ts - money and date formatting helpers
 - types/invoice.ts - TypeScript API contracts
 
 Pages describe user flows.
 Components isolate reusable UI pieces.
-Composable keeps API calls out of page components.
+Composables keep API calls, page state, form state, validation and submit logic out of UI components.
 Types keep frontend/backend data contracts explicit.
+
+The frontend uses composition functions instead of Pinia because invoice list, details, create form and edit form state are local to this module and do not require a global store.
 
 ## Business Rules
 
@@ -121,6 +130,7 @@ gross_amount is calculated on the frontend for UX, but validated and recalculate
 
 ## UX Edge Cases Covered
 
+- Create invoice form with automatic gross amount calculation
 - Loading state on invoice list and invoice details pages
 - Error state when backend API is unavailable
 - Empty invoice list state
