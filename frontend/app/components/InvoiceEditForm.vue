@@ -28,7 +28,7 @@ const {
   isUpdating,
   updateError,
   submitForm,
-} = useInvoiceEditForm(props, (invoice) => emit('updated', invoice))
+} = useInvoiceEditForm(() => props.invoice, (invoice) => emit('updated', invoice))
 
 function handleStatusChange(status: InvoiceFinalStatus): void {
   emit('change-status', status)
@@ -76,9 +76,8 @@ function handleDelete(): void {
         <span class="app-field__label">{{ t('fields.netAmount') }}</span>
         <input
           v-model="netAmount"
-          type="number"
-          min="0"
-          step="0.01"
+          type="text"
+          inputmode="decimal"
           class="app-field__control"
           :disabled="isLocked || isUpdating"
         >
@@ -89,13 +88,32 @@ function handleDelete(): void {
         <span class="app-field__label">{{ t('fields.vatAmount') }}</span>
         <input
           v-model="vatAmount"
-          type="number"
-          min="0"
-          step="0.01"
+          type="text"
+          inputmode="decimal"
           class="app-field__control"
           :disabled="isLocked || isUpdating"
         >
         <span v-if="errors.vat_amount" class="app-field__error">{{ errors.vat_amount }}</span>
+      </label>
+
+      <label class="app-field">
+        <span class="app-field__label">{{ t('fields.currency') }}</span>
+
+        <select
+          v-model="currency"
+          class="app-field__control"
+          :disabled="isLocked || isUpdating"
+        >
+          <option
+            v-for="currencyOption in currencyOptions"
+            :key="currencyOption"
+            :value="currencyOption"
+          >
+            {{ currencyOption }}
+          </option>
+        </select>
+
+        <span v-if="errors.currency" class="app-field__error">{{ errors.currency }}</span>
       </label>
 
       <label class="app-field">

@@ -154,6 +154,9 @@ export function useInvoiceEditForm(
     },
   )
 
+  const isLocked = computed(() => currentInvoice.value.status !== 'pending')
+  const isUpdating = computed(() => invoiceMutationsStore.isUpdating(currentInvoice.value.id))
+
   const grossAmount = computed(() => {
     const net = Number(normalizeNumberInput(netAmount.value))
     const vat = Number(normalizeNumberInput(vatAmount.value))
@@ -200,7 +203,8 @@ export function useInvoiceEditForm(
     dueDate,
     grossAmount,
     errors,
-    isSaving: computed(() => invoiceMutationsStore.isUpdating(currentInvoice.value.id)),
+    isLocked,
+    isUpdating,
     updateError: computed(() => invoiceMutationsStore.updateError),
     submitForm,
   }
