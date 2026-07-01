@@ -186,6 +186,10 @@ SCSS entry point:
 
     frontend/app/assets/styles/index.scss
 
+TailwindCSS entry point:
+
+    frontend/app/assets/css/main.css
+
 Structure:
 
     frontend/app/assets/styles/
@@ -237,9 +241,33 @@ Install dependencies if needed:
     docker compose exec backend composer install
     docker compose exec frontend npm install
 
-Run migrations and seeders:
+Run migrations and seed demo data:
 
-    docker compose exec backend php artisan migrate --seed
+    docker compose exec backend php artisan migrate:fresh --seed --force
+
+This command creates the database schema and inserts 10 demo invoices.
+
+## Demo Data
+
+Demo invoices are provided by:
+
+    backend/database/seeders/InvoiceSeeder.php
+
+The demo data is not recreated automatically on every application start.
+
+After running the seeder once, the data remains available because PostgreSQL data is stored in a Docker volume.
+
+Use this command when you need a clean database with demo invoices:
+
+    docker compose exec backend php artisan migrate:fresh --seed --force
+
+Expected demo invoice count:
+
+    docker compose exec backend php artisan tinker --execute="echo App\Models\Invoice::count();"
+
+Expected output:
+
+    10
 
 ## Local URLs
 
@@ -266,9 +294,13 @@ Rebuild services:
     docker compose build
     docker compose up -d postgres backend frontend
 
-Recreate database:
+Restart frontend:
 
-    docker compose exec backend php artisan migrate:fresh --seed
+    docker compose restart frontend
+
+Recreate database with demo invoices:
+
+    docker compose exec backend php artisan migrate:fresh --seed --force
 
 Show invoice API routes:
 
@@ -290,9 +322,32 @@ Frontend production build:
 
 Full local verification:
 
-    docker compose exec backend php artisan test
     docker compose exec frontend npm run test
     docker compose exec frontend npm run build
+    docker compose exec backend php artisan test
+
+After backend tests, reseed demo data if you want the UI to show demo invoices again:
+
+    docker compose exec backend php artisan migrate:fresh --seed --force
+
+## Final Verification Checklist
+
+Before submitting the project, run:
+
+    docker compose exec frontend npm run test
+    docker compose exec frontend npm run build
+    docker compose exec backend php artisan test
+    docker compose exec backend php artisan migrate:fresh --seed --force
+    docker compose exec backend php artisan tinker --execute="echo App\Models\Invoice::count();"
+    git status
+
+Expected result:
+
+- frontend tests pass
+- frontend production build completes
+- backend tests pass
+- invoice count is 10 after seeding
+- git working tree is clean
 
 ## GitHub Actions CI
 
@@ -303,7 +358,6 @@ Workflow file:
 The workflow runs on:
 
 - push to main
-- push to feature/production-polish
 - pull request to main
 
 CI checks:
