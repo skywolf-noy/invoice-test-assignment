@@ -121,6 +121,7 @@ describe('invoice Pinia stores', () => {
       net_amount: updatedInvoice.net_amount,
       vat_amount: updatedInvoice.vat_amount,
       gross_amount: updatedInvoice.gross_amount,
+      currency: updatedInvoice.currency,
       due_date: updatedInvoice.due_date,
     }
 

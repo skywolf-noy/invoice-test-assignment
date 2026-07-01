@@ -24,8 +24,8 @@ describe('notifications store', () => {
     })
 
     expect(store.items).toHaveLength(1)
-    expect(store.items[0].id).toBe(id)
-    expect(store.items[0].message).toBe('Saved')
+    expect(store.items[0]?.id).toBe(id)
+    expect(store.items[0]?.message).toBe('Saved')
 
     store.remove(id)
 
@@ -60,6 +60,6 @@ describe('notifications store', () => {
     notifySuccess('notifications.created', { duration: 0 })
 
     expect(store.items).toHaveLength(1)
-    expect(store.items[0].message).toBe('Рахунок створено.')
+    expect(store.items[0]?.message).toBe('Рахунок створено.')
   })
 })
