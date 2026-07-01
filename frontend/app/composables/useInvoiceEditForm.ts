@@ -1,10 +1,10 @@
 import { toTypedSchema } from '@vee-validate/zod'
 import { useField, useForm } from 'vee-validate'
-import { computed, watch } from 'vue'
+import { computed, toValue, watch, type MaybeRefOrGetter } from 'vue'
 import { z } from 'zod'
 import { useAppI18n } from '~/composables/useAppI18n'
-import { useNotificationsStore } from '~/stores/notifications'
 import { useInvoiceMutationsStore } from '~/stores/invoiceMutations'
+import { useNotificationsStore } from '~/stores/notifications'
 import type { Invoice } from '~/types/invoice'
 
 type InvoiceEditFormSubmitHandler = (invoice: Invoice) => void
@@ -61,8 +61,17 @@ function getServerErrorMessage(error: unknown, fallbackMessage: string): string 
   return firstValidationMessage || responseData?.message || fallbackMessage
 }
 
+function toFormValues(invoice: Invoice) {
+  return {
+    net_amount: invoice.net_amount,
+    vat_amount: invoice.vat_amount,
+    currency: invoice.currency as (typeof currencyOptions)[number],
+    due_date: invoice.due_date,
+  }
+}
+
 export function useInvoiceEditForm(
-  invoice: Invoice,
+  invoiceRef: MaybeRefOrGetter<Invoice>,
   onUpdated: InvoiceEditFormSubmitHandler,
 ) {
   const {
@@ -71,6 +80,8 @@ export function useInvoiceEditForm(
 
   const invoiceMutationsStore = useInvoiceMutationsStore()
   const notificationsStore = useNotificationsStore()
+
+  const currentInvoice = computed(() => toValue(invoiceRef))
 
   const validationSchema = toTypedSchema(
     z.object({
@@ -97,12 +108,7 @@ export function useInvoiceEditForm(
     resetForm,
   } = useForm({
     validationSchema,
-    initialValues: {
-      net_amount: invoice.net_amount,
-      vat_amount: invoice.vat_amount,
-      currency: invoice.currency as (typeof currencyOptions)[number],
-      due_date: invoice.due_date,
-    },
+    initialValues: toFormValues(currentInvoice.value),
   })
 
   const {
@@ -133,21 +139,21 @@ export function useInvoiceEditForm(
   })
 
   watch(
-    () => invoice.id,
-    () => {
+    currentInvoice,
+    (invoice) => {
       resetForm({
-        values: {
-          net_amount: invoice.net_amount,
-          vat_amount: invoice.vat_amount,
-          currency: invoice.currency as (typeof currencyOptions)[number],
-          due_date: invoice.due_date,
-        },
+        values: toFormValues(invoice),
       })
+    },
+    {
+      immediate: true,
     },
   )
 
   const submitForm = handleSubmit(async (values) => {
     try {
+      const invoice = currentInvoice.value
+
       const updatedInvoice = await invoiceMutationsStore.updateInvoice(invoice.id, {
         net_amount: formatAmount(values.net_amount),
         vat_amount: formatAmount(values.vat_amount),
@@ -179,7 +185,7 @@ export function useInvoiceEditForm(
     dueDate,
     grossAmount,
     errors,
-    isSaving: computed(() => invoiceMutationsStore.isUpdating(invoice.id)),
+    isSaving: computed(() => invoiceMutationsStore.isUpdating(currentInvoice.value.id)),
     updateError: computed(() => invoiceMutationsStore.updateError),
     submitForm,
   }
