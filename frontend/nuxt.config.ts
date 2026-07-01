@@ -17,8 +17,18 @@ export default defineNuxtConfig({
   },
 
   vite: {
+    logLevel: 'error',
     plugins: [
       tailwindcss(),
     ],
+  },
+  vite: {
+    build: {
+      sourcemap: false,
+      chunkSizeWarningLimit: 1200,
+      modulePreload: {
+        polyfill: false,
+      },
+    },
   },
 })

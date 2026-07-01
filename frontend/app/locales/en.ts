@@ -63,18 +63,16 @@ export const en = {
   },
 
   forms: {
-    invoiceInformation: 'Invoice information',
-    editableFields: 'Editable fields',
+    invoiceData: 'Invoice data',
+    backendValidation: 'Fields are additionally validated on the backend.',
     financialFields: 'Financial fields',
-    lifecycleControls: 'Lifecycle controls',
+    editableFields: 'Editable fields',
+    pendingOnly: 'Editing is available only for pending invoices.',
     saveChanges: 'Save changes',
-    createInvoice: 'Create invoice',
     saving: 'Saving...',
     creating: 'Creating...',
     calculatedGross: 'Gross amount is calculated automatically.',
     lockedInvoice: 'Approved/rejected invoices cannot be edited.',
-    pendingOnly: 'Editing is available only for pending invoices.',
-    requiredServerValidation: 'Fields are additionally validated on the backend.',
   },
 
   validation: {

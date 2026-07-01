@@ -63,18 +63,16 @@ export const ua = {
   },
 
   forms: {
-    invoiceInformation: 'Дані рахунку',
-    editableFields: 'Редаговані поля',
+    invoiceData: 'Дані рахунку',
+    backendValidation: 'Поля додатково перевіряються на backend.',
     financialFields: 'Фінансові поля',
-    lifecycleControls: 'Керування статусом',
+    editableFields: 'Редаговані поля',
+    pendingOnly: 'Редагування доступне тільки для рахунків зі статусом очікування.',
     saveChanges: 'Зберегти зміни',
-    createInvoice: 'Створити рахунок',
     saving: 'Збереження...',
     creating: 'Створення...',
     calculatedGross: 'Сума з ПДВ розраховується автоматично.',
-    lockedInvoice: 'Затверджено/rejected інвойси не можна редагувати.',
-    pendingOnly: 'Редагування доступне тільки для рахунків зі статусом очікування.',
-    requiredServerValidation: 'Поля додатково перевіряються на backend.',
+    lockedInvoice: 'Затверджені або відхилені рахунки не можна редагувати.',
   },
 
   validation: {
@@ -87,14 +85,14 @@ export const ua = {
   },
 
   errors: {
-    loadInvoices: 'Не вдалося завантажити інвойси.',
-    loadInvoice: 'Не вдалося завантажити інвойс.',
-    createInvoice: 'Не вдалося створити інвойс.',
-    updateInvoice: 'Не вдалося оновити інвойс.',
-    updateStatus: 'Не вдалося оновити статус інвойсу.',
-    deleteInvoice: 'Не вдалося видалити інвойс.',
-    onlyОчікуєStatus: 'Тільки pending-інвойси можуть змінювати статус.',
-    onlyОчікуєDelete: 'Тільки pending-інвойси можна видаляти.',
+    loadInvoices: 'Не вдалося завантажити рахунки.',
+    loadInvoice: 'Не вдалося завантажити рахунок.',
+    createInvoice: 'Не вдалося створити рахунок.',
+    updateInvoice: 'Не вдалося оновити рахунок.',
+    updateStatus: 'Не вдалося оновити статус рахунку.',
+    deleteInvoice: 'Не вдалося видалити рахунок.',
+    onlyPendingStatus: 'Тільки рахунки зі статусом очікування можуть змінювати статус.',
+    onlyPendingDelete: 'Тільки рахунки зі статусом очікування можна видаляти.',
   },
 
   notifications: {
