@@ -1,6 +1,6 @@
 import { toTypedSchema } from '@vee-validate/zod'
 import { useField, useForm } from 'vee-validate'
-import { computed, toValue, watch, type MaybeRefOrGetter } from 'vue'
+import { computed, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
 import { z } from 'zod'
 import { useAppI18n } from '~/composables/useAppI18n'
 import { useInvoiceMutationsStore } from '~/stores/invoiceMutations'
@@ -80,6 +80,7 @@ export function useInvoiceEditForm(
 
   const invoiceMutationsStore = useInvoiceMutationsStore()
   const notificationsStore = useNotificationsStore()
+  const isUpdating = ref(false)
 
   const currentInvoice = computed(() => toValue(invoiceRef))
 
@@ -155,7 +156,6 @@ export function useInvoiceEditForm(
   )
 
   const isLocked = computed(() => currentInvoice.value.status !== 'pending')
-  const isUpdating = computed(() => invoiceMutationsStore.isUpdating(currentInvoice.value.id))
 
   const grossAmount = computed(() => {
     const net = Number(normalizeNumberInput(netAmount.value))
@@ -169,6 +169,8 @@ export function useInvoiceEditForm(
   })
 
   const submitForm = handleSubmit(async (values) => {
+    isUpdating.value = true
+
     try {
       const invoice = currentInvoice.value
 
@@ -191,6 +193,8 @@ export function useInvoiceEditForm(
         type: 'error',
         message: getServerErrorMessage(error, t('errors.updateInvoice')),
       })
+    } finally {
+      isUpdating.value = false
     }
   })
 
