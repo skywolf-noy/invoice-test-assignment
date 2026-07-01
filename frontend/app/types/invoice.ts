@@ -39,8 +39,8 @@ export interface CreateInvoicePayload {
   number: string
   supplier_name: string
   supplier_tax_id: string
-  net_amount: number
-  vat_amount: number
+  net_amount: string
+  vat_amount: string
   gross_amount: string
   currency: string
   issue_date: string
@@ -48,9 +48,10 @@ export interface CreateInvoicePayload {
 }
 
 export interface UpdateInvoicePayload {
-  net_amount: number
-  vat_amount: number
+  net_amount: string
+  vat_amount: string
   gross_amount: string
+  currency: string
   due_date: string
 }
 
