@@ -468,3 +468,27 @@
     padding-top: 0.35rem;
   }
 }
+
+/* Create page hero aligned with invoice details hero */
+.app-create-hero {
+  gap: 0;
+}
+
+.app-create-hero__content {
+  max-width: 46rem;
+  padding-top: 1.75rem;
+}
+
+.app-create-hero .app-title {
+  margin-bottom: 0.75rem;
+}
+
+.app-create-hero .app-details-hero__meta {
+  max-width: 44rem;
+}
+
+@media (max-width: 767px) {
+  .app-create-hero__content {
+    padding-top: 1.25rem;
+  }
+}

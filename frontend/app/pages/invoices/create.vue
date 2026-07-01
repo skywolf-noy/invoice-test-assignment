@@ -1,7 +1,6 @@
 <script setup lang="ts">
 const {
   t,
-  goBack,
   handleCreated,
 } = useInvoiceCreatePage()
 </script>
@@ -9,33 +8,40 @@ const {
 <template>
   <main class="app-page">
     <div class="app-container app-container--md">
-      <div class="app-toolbar app-toolbar--between app-toolbar--center">
-        <button
-          type="button"
-          class="app-button app-button--secondary"
-          @click="goBack"
-        >
-          {{ t('navigation.backToInvoices') }}
-        </button>
+      <div class="app-stack">
+        <section class="app-details-hero app-create-hero">
+          <div class="app-details-hero__toolbar">
+            <NuxtLink
+              to="/invoices"
+              class="app-button app-button--secondary"
+            >
+              {{ t('navigation.backToInvoices') }}
+            </NuxtLink>
 
-        <LanguageSwitcher />
+            <div class="app-details-hero__toolbar-actions">
+              <LanguageSwitcher />
+            </div>
+          </div>
+
+          <div class="app-create-hero__content">
+            <p class="app-eyebrow">
+              {{ t('app.module') }}
+            </p>
+
+            <h1 class="app-title">
+              {{ t('invoices.createTitle') }}
+            </h1>
+
+            <p class="app-details-hero__meta">
+              {{ t('invoices.createDescription') }}
+            </p>
+          </div>
+        </section>
+
+        <section class="app-card">
+          <InvoiceCreateForm @created="handleCreated" />
+        </section>
       </div>
-
-      <header class="app-page-header">
-        <div class="app-page-header__content">
-          <p class="app-eyebrow">
-            {{ t('app.module') }}
-          </p>
-          <h1 class="app-title">
-            {{ t('invoices.createTitle') }}
-          </h1>
-          <p class="app-description">
-            {{ t('invoices.createDescription') }}
-          </p>
-        </div>
-      </header>
-
-      <InvoiceCreateForm @created="handleCreated" />
     </div>
   </main>
 </template>
