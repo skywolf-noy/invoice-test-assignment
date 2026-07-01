@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { toRef } from 'vue'
 import type { Invoice, InvoiceFinalStatus } from '~/types/invoice'
 
 const props = defineProps<{
@@ -15,8 +14,6 @@ const emit = defineEmits<{
   'change-status': [status: InvoiceFinalStatus]
   delete: []
 }>()
-
-const invoiceRef = toRef(props, 'invoice')
 
 const {
   t,

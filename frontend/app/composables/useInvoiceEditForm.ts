@@ -105,7 +105,7 @@ export function useInvoiceEditForm(
   const {
     handleSubmit,
     errors,
-    resetForm,
+    setValues,
   } = useForm({
     validationSchema,
     initialValues: toFormValues(currentInvoice.value),
@@ -127,6 +127,33 @@ export function useInvoiceEditForm(
     value: dueDate,
   } = useField<string>('due_date')
 
+  function syncFormWithInvoice(invoice: Invoice): void {
+    const values = toFormValues(invoice)
+
+    setValues(values, false)
+
+    netAmount.value = values.net_amount
+    vatAmount.value = values.vat_amount
+    currency.value = values.currency
+    dueDate.value = values.due_date
+  }
+
+  watch(
+    () => [
+      currentInvoice.value.id,
+      currentInvoice.value.net_amount,
+      currentInvoice.value.vat_amount,
+      currentInvoice.value.currency,
+      currentInvoice.value.due_date,
+    ],
+    () => {
+      syncFormWithInvoice(currentInvoice.value)
+    },
+    {
+      immediate: true,
+    },
+  )
+
   const grossAmount = computed(() => {
     const net = Number(normalizeNumberInput(netAmount.value))
     const vat = Number(normalizeNumberInput(vatAmount.value))
@@ -137,18 +164,6 @@ export function useInvoiceEditForm(
 
     return (net + vat).toFixed(2)
   })
-
-  watch(
-    currentInvoice,
-    (invoice) => {
-      resetForm({
-        values: toFormValues(invoice),
-      })
-    },
-    {
-      immediate: true,
-    },
-  )
 
   const submitForm = handleSubmit(async (values) => {
     try {
