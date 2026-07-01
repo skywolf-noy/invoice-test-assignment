@@ -492,3 +492,27 @@
     padding-top: 1.25rem;
   }
 }
+
+/* Create page single-card layout */
+.app-create-shell {
+  gap: 0;
+}
+
+.app-create-shell__form {
+  margin-top: 2rem;
+  border-top: 1px solid var(--color-border);
+  padding-top: 2rem;
+}
+
+.app-create-shell .app-form {
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+@media (max-width: 767px) {
+  .app-create-shell__form {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+  }
+}
